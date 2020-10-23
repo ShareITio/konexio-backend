@@ -1,7 +1,7 @@
-const { create, list } = require("./twilio");
-const { handler } = require("./index");
+const { create, list } = require("../src/twilio");
+const { handler } = require("../src/index");
 
-jest.mock("./twilio", () => ({
+jest.mock("../src/twilio", () => ({
   create: jest.fn(() => true),
   list: jest.fn(() => []),
 }));

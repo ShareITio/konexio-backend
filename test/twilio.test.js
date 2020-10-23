@@ -1,4 +1,4 @@
-const { create, list } = require("./twilio");
+const { create, list } = require("../src/twilio");
 
 it("should get sms list", async () => {
   const result = await list(1);

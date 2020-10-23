@@ -9,9 +9,10 @@
     "function_name": "konexio"
   },
   "scripts": {
-    "test": "jest",
+    "test": "dotenv jest",
     "build": "lambda-zip %npm_package_config_zip_config% %npm_package_config_zip_name% -a -v",
-    "deploy": "aws lambda update-function-code --function-name %npm_package_config_function_name% --zip-file fileb://%npm_package_config_zip_name%"
+    "deploy": "aws lambda update-function-code --function-name %npm_package_config_function_name% --zip-file fileb://%npm_package_config_zip_name%",
+    "build-deploy": "npm run build; npm run deploy"
   },
   "author": "Johann Hospice",
   "license": "ISC",
@@ -19,10 +20,10 @@
     "airtable": "^0.10.0",
     "aws-sdk": "^2.776.0",
     "aws-xray-sdk": "^3.2.0",
-    "dotenv": "^8.2.0",
     "twilio": "^3.50.0"
   },
   "devDependencies": {
+    "dotenv-cli": "^4.0.0",
     "eslint": "^7.11.0",
     "jest": "^26.6.1",
     "lambda-zip": "^0.3.2"
