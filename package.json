@@ -10,9 +10,9 @@
   },
   "scripts": {
     "test": "dotenv jest",
-    "build": "lambda-zip %npm_package_config_zip_config% %npm_package_config_zip_name% -a -v",
-    "deploy": "aws lambda update-function-code --function-name %npm_package_config_function_name% --zip-file fileb://%npm_package_config_zip_name%",
-    "build-deploy": "npm run build; npm run deploy"
+    "zip": "lambda-zip %npm_package_config_zip_config% %npm_package_config_zip_name% -a -v",
+    "update": "aws lambda update-function-code --function-name %npm_package_config_function_name% --zip-file fileb://%npm_package_config_zip_name%",
+    "zip-update": "npm run zip && npm run update"
   },
   "author": "Johann Hospice",
   "license": "ISC",

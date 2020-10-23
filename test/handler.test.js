@@ -1,5 +1,5 @@
 const { create, list } = require("../src/twilio");
-const { handler } = require("../src/index");
+const handler = require("../src/handler").default;
 
 jest.mock("../src/twilio", () => ({
   create: jest.fn(() => true),
