@@ -1,27 +1,14 @@
-const AWS = require("aws-sdk");
-const client = require("twilio")(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_ACCOUNT_SID
-);
+const { create, list } = require("./twilio");
 const { makeReturn } = require("./tools");
 
-const post = async ({ from, body, to }) => {
-  return makeReturn(await client.messages.create({ from, body, to }), "200");
-};
-
-const get = async () => {
-  return makeReturn(await client.messages.list({ limit: 20 }), "200");
-};
-
-export const handler = (event, context) => {
+module.exports.handler = async (event, context) => {
   console.log("Received event:", JSON.stringify(event, null, 2));
 
   if (event.httpMethod === "GET") {
-    return get(event.body);
+    return makeReturn(await list(2), "200");
   }
   if (event.httpMethod === "POST") {
-    return post(event.body);
+    return makeReturn(await create(event.body.body, event.body.to), "200");
   }
-
   return makeReturn(`Unsupported method "${event.httpMethod}"`, "400");
 };

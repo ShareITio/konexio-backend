@@ -1,4 +1,4 @@
-export const makeReturn = (body, statusCode) => ({
+module.exports.makeReturn = (body, statusCode) => ({
   body,
   statusCode,
   headers: {
