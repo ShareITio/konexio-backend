@@ -1,5 +1,6 @@
-module.exports.ERROR_RETURN = "400";
-module.exports.SUCCESS_RETURN = "200";
+module.exports.STATUS_ERROR = "400";
+
+module.exports.STATUS_SUCCESS = "200";
 
 module.exports.makeReturn = (body, statusCode) => {
   console.log("Return : ", statusCode, JSON.stringify(body, null, 2));
@@ -8,6 +9,9 @@ module.exports.makeReturn = (body, statusCode) => {
     body: JSON.stringify(body),
     headers: {
       "Content-Type": "application/json",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Origin": "https://airtable.com",
+      "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT,DELETE,HEAD,PATCH",
     },
   };
 };
