@@ -1,20 +1,31 @@
 const { create, list } = require("./twilio");
-const { makeReturn } = require("./tools");
+const {
+  ERROR_RETURN,
+  SUCCESS_RETURN,
+  makeReturn,
+  getInfo,
+} = require("./tools");
+
+const get = async ({ limit = 2 }) =>
+  makeReturn(await list(limit), SUCCESS_RETURN);
+
+const post = async ({ to, body }) => {
+  if (to && body) return makeReturn(await create(to, body), SUCCESS_RETURN);
+  return makeReturn(
+    "Invalid body. In order to send an sms you need the 'to' and 'body' attributes.",
+    ERROR_RETURN
+  );
+};
 
 module.exports.default = async (event, context) => {
-  console.log("Received event:", JSON.stringify(event, null, 2));
-
   try {
-    if (event.httpMethod === "GET") {
-      return makeReturn(await list(2), "200");
-    }
-    if (event.httpMethod === "POST") {
-      const { body, to } = JSON.parse(event.body);
-      return makeReturn(await create(to, body), "200");
-    }
-    return makeReturn(`Unsupported "${event.httpMethod}".`, "400");
+    const { httpMethod, body } = getInfo(event, context);
+
+    if (httpMethod === "GET") return get(body);
+    if (httpMethod === "POST") return post(body);
+    return makeReturn(`Unsupported "${httpMethod}".`, ERROR_RETURN);
   } catch (error) {
     console.error(error);
-    return makeReturn("An error as occured.", "400");
+    return makeReturn("An error as occured.", ERROR_RETURN);
   }
 };
