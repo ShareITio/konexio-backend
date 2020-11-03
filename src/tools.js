@@ -9,9 +9,11 @@ module.exports.makeReturn = (body, statusCode) => {
     body: JSON.stringify(body),
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Allow-Origin": "https://airtable.com",
+      "Access-Control-Allow-Headers":
+        "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
+      "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT,DELETE,HEAD,PATCH",
+      "Access-Control-Allow-Credentials": true, // Required for cookies, authorization headers with HTTPS
     },
   };
 };
@@ -21,6 +23,6 @@ module.exports.getInfo = (event) => {
   return {
     // REST API or HTTP API
     httpMethod: event.httpMethod || event.requestContext.http.method,
-    body: JSON.parse(event.body),
+    body: !event.body ? {} : JSON.parse(event.body),
   };
 };
