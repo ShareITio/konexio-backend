@@ -1,7 +1,7 @@
 const path = require("path");
-// const webpack = require("webpack");
+const glob = require("glob");
+const webpack = require("webpack");
 const Dotenv = require("dotenv-webpack");
-const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 
 /*
  * SplitChunksPlugin is enabled by default and replaced
@@ -24,52 +24,34 @@ const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
  *
  */
 
-// const TerserPlugin = require('terser-webpack-plugin');
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
-  // mode: "development",
-
-  entry: {
-    sendAlone: "./src/sendAlone.script.js",
-    sendWithTemplate: "./src/sendWithTemplate.script.js",
-  },
+  mode: "production",
+  entry: glob
+    .sync("./src/scripts/*.js")
+    .reduce(
+      (acc, cur) => ({ ...acc, [/\/([0-9a-zA-z]+?).js/.exec(cur)[1]]: cur }),
+      {}
+    ),
   output: {
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, "./dist"),
     filename: "[name].bundle.js",
   },
-
-  plugins: [
-    // new webpack.ProgressPlugin(),
-    new Dotenv(),
-    new UglifyJSPlugin(),
-  ],
-
-  // module: {
-  //   rules: [
-  //     {
-  //       test: /\.(js|jsx)$/,
-  //       include: [path.resolve(__dirname, "src")],
-  //       loader: "babel-loader",
-  //     },
-  //   ],
-  // },
-
+  plugins: [new webpack.ProgressPlugin(), new Dotenv()],
   optimization: {
-    // minimizer: [new TerserPlugin()],
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          ecma: 6,
+          compress: true,
+          output: {
+            comments: false,
+            beautify: false,
+          },
+        },
+      }),
+    ],
     minimize: false,
-
-    // splitChunks: {
-    //   cacheGroups: {
-    //     vendors: {
-    //       priority: -10,
-    //       test: /[\\/]node_modules[\\/]/,
-    //     },
-    //   },
-
-    //   chunks: "async",
-    //   minChunks: 1,
-    //   minSize: 30000,
-    //   name: false,
-    // },
   },
 };
