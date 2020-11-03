@@ -2,15 +2,17 @@
   "name": "konexio",
   "version": "0.0.1",
   "description": "",
-  "main": "src/index.js",
   "config": {
+    "zip_config_layer": ".layer-zip",
     "zip_config": ".lambda-zip",
+    "zip_name_layer": "layer.zip",
     "zip_name": "konexio.zip",
     "function_name": "konexio"
   },
   "scripts": {
     "test": "dotenv jest",
     "zip": "lambda-zip %npm_package_config_zip_config% %npm_package_config_zip_name% -a -v",
+    "zip-layer": "lambda-zip %npm_package_config_zip_config_layer% %npm_package_config_zip_name_layer% -a -v",
     "update": "aws lambda update-function-code --function-name %npm_package_config_function_name% --zip-file fileb://%npm_package_config_zip_name%",
     "zip-update": "npm run zip && npm run update"
   },
