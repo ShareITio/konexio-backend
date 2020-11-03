@@ -39,3 +39,21 @@ export async function getTemplates() {
 export function composeMessage(message, altMessage) {
   return `${message}\n${altMessage}`;
 }
+
+export function sendSMS(phone, message) {
+  const body = {
+    to: phone,
+    body: message,
+  };
+  console.log(body);
+
+  // envoie le message à AWS
+  return fetch(process.env.AWS_LAMBDA, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.AWS_API_KEY,
+    },
+  });
+}
