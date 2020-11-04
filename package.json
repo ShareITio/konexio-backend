@@ -1,20 +1,20 @@
 {
-  "name": "konexio",
+  "name": "aws-lambda-konexio",
   "version": "0.0.1",
-  "description": "",
+  "description": "Le code source AWS Lambda et Airtable Sripts de Konexio.",
   "config": {
-    "zip_config_layer": ".layer-zip",
-    "zip_config": ".lambda-zip",
-    "zip_name_layer": "layer.zip",
-    "zip_name": "konexio.zip",
-    "function_name": "konexio"
+    "function_zip_name": "lambda.zip"
   },
   "scripts": {
     "test": "dotenv jest",
-    "zip": "lambda-zip %npm_package_config_zip_config% %npm_package_config_zip_name% -a -v",
-    "zip-layer": "lambda-zip %npm_package_config_zip_config_layer% %npm_package_config_zip_name_layer% -a -v",
-    "update": "aws lambda update-function-code --function-name %npm_package_config_function_name% --zip-file fileb://%npm_package_config_zip_name%",
-    "zip-update": "npm run zip && npm run update"
+    "prelayer-zip": "rm -rf nodejs",
+    "layer-zip": "mkdir nodejs && npm prune --production && cp -R node_modules/ nodejs/ && cp package.json nodejs/package.json && cp package-lock.json nodejs/package-lock.json && npm install --only=dev && lambda-zip layer.lambda-zip layer.zip -a -v",
+    "postlayer-zip": "rm -rf nodejs",
+    "layer-update": "aws lambda publish-layer-version --layer-name nodeModules --zip-file fileb://layer.zip",
+    "layer-zip-update": "npm run layer-zip && npm run layer-update",
+    "function-zip": "lambda-zip function.lambda-zip lambda.zip -a -v",
+    "function-update": "aws lambda update-function-code --function-name konexio --zip-file fileb://lambda.zip",
+    "function-zip-update": "npm run function-zip && npm run function-update"
   },
   "author": "Johann Hospice",
   "license": "ISC",
