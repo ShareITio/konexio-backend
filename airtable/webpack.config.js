@@ -37,6 +37,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "./dist"),
     filename: "[name].bundle.js",
+    iife: false,
   },
   plugins: [new webpack.ProgressPlugin(), new Dotenv()],
   optimization: {
