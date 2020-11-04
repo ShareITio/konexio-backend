@@ -9,5 +9,5 @@ scenarioSMS(async () => {
   // inclus dans le template le nom de l'utilisateur
   const messageWithName = messageTemplate.replace("#NOM", name);
 
-  await sendSMS(phone, composeMessage(messageWithName, message));
+  return sendSMS(phone, composeMessage(messageWithName, message));
 });
