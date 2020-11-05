@@ -2,19 +2,19 @@
   "name": "aws-lambda-konexio",
   "version": "0.0.1",
   "description": "Le code source AWS Lambda et Airtable Sripts de Konexio.",
-  "config": {
-    "function_zip_name": "lambda.zip"
-  },
   "scripts": {
     "test": "dotenv jest",
-    "prelayer-zip": "rm -rf nodejs",
-    "layer-zip": "mkdir nodejs && npm prune --production && cp -R node_modules/ nodejs/ && cp package.json nodejs/package.json && cp package-lock.json nodejs/package-lock.json && npm install --only=dev && lambda-zip layer.lambda-zip layer.zip -a -v",
-    "postlayer-zip": "rm -rf nodejs",
-    "layer-update": "aws lambda publish-layer-version --layer-name nodeModules --zip-file fileb://layer.zip",
-    "layer-zip-update": "npm run layer-zip && npm run layer-update",
-    "function-zip": "lambda-zip function.lambda-zip lambda.zip -a -v",
-    "function-update": "aws lambda update-function-code --function-name konexio --zip-file fileb://lambda.zip",
-    "function-zip-update": "npm run function-zip && npm run function-update"
+    "prezip:layer": "rm -rf nodejs",
+    "zip:layer": "mkdir nodejs && npm prune --production && cp -R node_modules/ nodejs/ && cp package.json nodejs/package.json && cp package-lock.json nodejs/package-lock.json && npm install --only=dev && lambda-zip .lambda-zip/layer.lambda-zip layer.zip -a -v",
+    "postzip:layer": "rm -rf nodejs",
+    "update:layer": "aws lambda publish-layer-version --layer-name nodeModules --zip-file fileb://layer.zip",
+    "deploy:layer": "npm run zip:layer && npm run update:layer",
+    "zip:sms": "mkdir build ; lambda-zip .lambda-zip/function-sms build/sms.zip -a -v",
+    "update:sms": "aws lambda update-function-code --function-name konexio --zip-file fileb://build/sms.zip",
+    "deploy:sms": "npm run zip:sms && npm run update:sms",
+    "zip:scheduled15": "mkdir build ; lambda-zip .lambda-zip/function-scheduled15 build/scheduled15.zip -a -v",
+    "update:scheduled15": "aws lambda update-function-code --function-name scheduled15 --zip-file fileb://build/scheduled15.zip",
+    "deploy:scheduled15": "npm run zip:scheduled15 && npm run update:scheduled15"
   },
   "author": "Johann Hospice",
   "license": "ISC",

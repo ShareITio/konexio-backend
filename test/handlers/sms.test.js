@@ -1,5 +1,5 @@
-const { create, list } = require("../src/twilio");
-const handler = require("../src/handler").default;
+const { create, list } = require("../../src/twilio");
+const handler = require("../src/handlers/sms").handler;
 
 jest.mock("../src/twilio", () => ({
   create: jest.fn(() => true),
