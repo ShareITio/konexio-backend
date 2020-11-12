@@ -5,17 +5,20 @@ const {
   makeReturn,
   getInfo,
 } = require("../tools");
+const { getTrainings, getTrainingSession } = require("../crossknowledge");
 
 module.exports.handler = async (event, context) => {
   try {
     const {
       httpMethod,
-      body: { limit = 2, to, body },
+      body: { to, body, guid },
     } = getInfo(event, context);
 
     switch (httpMethod) {
       case "GET":
-        return makeReturn(await list(limit), STATUS_SUCCESS);
+        if (guid)
+          return makeReturn(await getTrainingSession(guid), STATUS_SUCCESS);
+        return makeReturn(await getTrainings(), STATUS_SUCCESS);
       case "POST":
         if (to && body) {
           return makeReturn(await create(to, body), STATUS_SUCCESS);

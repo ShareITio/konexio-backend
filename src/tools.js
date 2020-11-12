@@ -1,3 +1,21 @@
+const https = require("https");
+
+module.exports.request = (options) =>
+  new Promise((resolve, reject) =>
+    https
+      .request(options, (res) => {
+        let data = "";
+
+        res.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        res.on("end", () => resolve(JSON.parse(data)));
+      })
+      .on("error", (error) => reject(error))
+      .end()
+  );
+
 module.exports.STATUS_ERROR = "400";
 
 module.exports.STATUS_SUCCESS = "200";
