@@ -1,14 +1,8 @@
-const { STATUS_SUCCESS, makeReturn } = require("../tools");
+const { STATUS_SUCCESS, makeReturn, formattedDate } = require("../tools");
 const { list } = require("../twilio");
 const { makeCreate, makeSchema } = require("../airtable");
 
 const MINUTES = 15;
-
-function formattedDate(d = new Date()) {
-  return [d.getDate(), d.getMonth() + 1, d.getFullYear()]
-    .map((n) => (n < 10 ? `0${n}` : `${n}`))
-    .join("/");
-}
 
 const schemaMessage = {
   from: "Téléphone",
@@ -38,7 +32,7 @@ module.exports.handler = async (event) => {
     );
 
     return makeReturn(
-      `Record created/receive : ${receive.length}`,
+      `Record created/received : ${receive.length}`,
       STATUS_SUCCESS
     );
   } catch (err) {

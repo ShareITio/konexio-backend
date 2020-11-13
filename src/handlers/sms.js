@@ -1,4 +1,4 @@
-const { create, list } = require("../twilio");
+const { create } = require("../twilio");
 const {
   STATUS_ERROR,
   STATUS_SUCCESS,

@@ -6,4 +6,4 @@ const client = require("twilio")(
 module.exports.create = async (to, body) =>
   client.messages.create({ from: process.env.TWILIO_PHONE, body, to });
 
-module.exports.list = async (limit) => client.messages.list({ limit });
+module.exports.list = async (options) => client.messages.list(options);

@@ -15,7 +15,7 @@ module.exports.getTrainings = () =>
 module.exports.getTrainingSession = (guid) =>
   request({
     hostname: process.env.CROSSKNOWLEDGE_HOST,
-    path: `API/ADMIN/v1/REST/Training/${guid}/Session/`,
+    path: `/API/ADMIN/v1/REST/Training/${guid}/Session/`,
     method: "GET",
     headers: {
       Host: process.env.CROSSKNOWLEDGE_HOST,
