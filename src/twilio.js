@@ -3,7 +3,7 @@ const client = require("twilio")(
   process.env.TWILIO_AUTH_TOKEN
 );
 
-module.exports.create = async (to, body) =>
+module.exports.create = (to, body) =>
   client.messages.create({ from: process.env.TWILIO_PHONE, body, to });
 
-module.exports.list = async (options) => client.messages.list(options);
+module.exports.list = (options) => client.messages.list(options);
