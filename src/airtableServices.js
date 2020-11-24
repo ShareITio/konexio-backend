@@ -4,14 +4,15 @@ const schemaMessage = {
   to: "Numéro Konexio de réception",
   from: "Numéro d'envoi",
   body: "Contenu du message",
-  dateSent: "Date et heure de réception",
   status: "Statut du message",
-  learners: "Candidatures apprenants liées au numéro",
+  candidates: "Candidatures apprenants liées au numéro",
+  dateReceived: "Date et heure de réception",
+  dateSent: "Date et heure d'envoi",
 };
 module.exports.createMessage = makeCreate(
   "Messages",
   makeSchema(schemaMessage, (name) =>
-    schemaMessage.dateSent === name
+    schemaMessage.dateSent === name || schemaMessage.dateReceived === name
       ? (data) => data.toISOString()
       : (data) => data
   )
@@ -23,6 +24,6 @@ const schemaCandidate = {
 };
 module.exports.fetchCandidates = makeFetcher(
   "Candidatures DigitAll et DigiStart",
-  "Toutes les candidatures",
+  "Master view",
   makeSchema(schemaCandidate, (name) => (data) => data.get(name))
 );
