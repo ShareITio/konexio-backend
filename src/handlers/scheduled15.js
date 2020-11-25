@@ -55,12 +55,11 @@ module.exports.handler = async (event, context) => {
 
     const date = new Date(event.time);
 
-    const datestring =
-      [date.getDate(), date.getMonth() + 1, date.getFullYear()].join("/") +
-      " à " +
-      date.getHours() +
-      ":" +
-      date.getMinutes();
+    const datestring = `${[
+      date.getDate(),
+      date.getMonth() + 1,
+      date.getFullYear(),
+    ].join("/")} à ${[date.getHours(), date.getMinutes()].join(":")}`;
 
     const pub = await SNS.publish({
       Message:
