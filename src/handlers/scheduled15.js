@@ -9,9 +9,10 @@ const MINUTES = 15;
 
 // Fonction permettant de récupérer les sms recu de ces 15 derniere minutes sur Twilio et de les envoyer sur airtable
 module.exports.handler = async (event, context) => {
-  console.log(event);
-
   try {
+    console.log(event);
+    // throw new Error("Attention le chargement des message n'a pas pu se produire.");
+
     const [candidates, messages] = await Promise.all([
       // On récupere tous les candidats
       fetchCandidates(),
@@ -49,17 +50,34 @@ module.exports.handler = async (event, context) => {
 
     // Tout c'est passé comme sur des roulettes
     return `Record created/received : ${messages.length}`;
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error(err);
+
+    const date = new Date(event.time);
+
+    const datestring =
+      [date.getDate(), date.getMonth() + 1, date.getFullYear()].join("/") +
+      " à " +
+      date.getHours() +
+      ":" +
+      date.getMinutes();
+
     const pub = await SNS.publish({
       Message:
-        `Une erreur s'est produite lors de l'execution de la la fonction "${context.functionName}" à ${event.time}. Voici le descriptif ci-dessous.\n\n` +
-        `Message de l'erreur : "${e}"\n` +
-        `Informations complémentaires: ${JSON.stringify({
-          event,
-          context,
-        })}\n` +
-        `Lien du log de la fonction : https://eu-west-3.console.aws.amazon.com/lambda/home?region=eu-west-3#/functions/scheduled15?tab=monitor`,
+        `Bonjour,\n\n` +
+        `Vous recevez ce message car une erreur s'est produite sur une fonction hebergée sur AWS.\n\n\n` +
+        `Nom de la fonction : "${context.functionName}"\n\n` +
+        `Date et heure de l'erreur : "${datestring}"\n\n` +
+        `Message de l'erreur : "${err}"\n\n` +
+        `Lien du log de la fonction : https://eu-west-3.console.aws.amazon.com/lambda/home?region=eu-west-3#/functions/scheduled15?tab=monitor\n\n` +
+        `Informations complémentaires: ${JSON.stringify(
+          {
+            event,
+            context,
+          },
+          null,
+          2
+        )}\n`,
       TopicArn: process.env.ERROR_TOPIC_ARN,
     }).promise();
     console.log(pub);
