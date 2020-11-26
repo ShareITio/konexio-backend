@@ -2,5 +2,6 @@
   "globals": {
     "base": "readonly",
     "input": "readonly"
-  }
+  },
+  "type": "commonjs"
 }
