@@ -1,9 +1,11 @@
 const { request } = require("./tools");
+const querystring = require("querystring");
 
 const HEADERS = {
   Host: process.env.CROSSKNOWLEDGE_HOST,
   "API-KEY": process.env.CROSSKNOWLEDGE_API_KEY,
   "Cache-Control": "no-cache",
+  "Content-Type": "application/x-www-form-urlencoded",
 };
 
 module.exports.getTrainings = () =>
@@ -36,23 +38,28 @@ module.exports.createLearner = (
     start,
     end,
   }
-) =>
-  request({
-    hostname: process.env.CROSSKNOWLEDGE_HOST,
-    path: `/API/ADMIN/v1/REST/Learner/`,
-    method: "POST",
-    headers: HEADERS,
-    body: JSON.stringify({
-      login,
-      name,
-      firstName,
-      email,
-      entityGuid,
-      language,
-      referenceNumber,
-      customFields,
-      status,
-      start,
-      end,
-    }),
+) => {
+  const postData = querystring.stringify({
+    login,
+    name,
+    firstName,
+    email,
+    entityGuid,
+    language,
+    referenceNumber,
+    customFields: customFields || [],
+    status,
+    start,
+    end,
   });
+  console.log("postData", postData);
+  return request(
+    {
+      hostname: process.env.CROSSKNOWLEDGE_HOST,
+      path: "/API/ADMIN/v1/REST/Learner/",
+      method: "POST",
+      headers: HEADERS,
+    },
+    postData
+  );
+};

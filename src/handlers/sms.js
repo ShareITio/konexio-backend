@@ -22,7 +22,7 @@ module.exports.handler = async (event, context) => {
         return makeReturn(await getTrainings(), STATUS_SUCCESS);
       case "POST":
         if (data && endpoint) {
-          if (endpoint === "Learner") {
+          if (endpoint === "LEARNERS") {
             try {
               const result = await Promise.all(
                 data.map((data, i) => {
@@ -32,30 +32,38 @@ module.exports.handler = async (event, context) => {
                     lastName: name,
                     firstName,
                     email,
-                    group,
-                    password,
+                    // group,
+                    // password,
                   } = data;
-
                   return createLearner(id, {
                     name,
                     firstName,
                     email,
-                    customFields: {
-                      group,
-                      password,
-                    },
+                    status: "Y",
+                    language: "fr-FR",
+                    entityGuid: "101B1F43-2D44-0AAC-CDA6-F4B8ED66F385", // Konexio entity
+                    // customFields: {
+                    //   "f114870d-ed13-4e03-bc77-c34841a7a52b": "France",
+                    //   "d941cf5f-00a8-4e8d-804e-f913e6aad471": "IT",
+                    // },
+                    //   group,
+                    //   password,
+                    // },
                   });
                 })
               );
-
-              console.log(result);
-              return `Added ${result.length}`;
-            } catch (err) {
-              console.error(err);
-              return notifyError(err, event, context);
+              if (result.every(({ message }) => message === "OK")) {
+                console.log(result);
+                return makeReturn(`Added ${result.length}`, STATUS_SUCCESS);
+              }
+              throw result;
+            } catch (reason) {
+              console.error(reason);
+              // await notifyError(reason, event, context);
+              return makeReturn("An error as occured.", STATUS_ERROR);
             }
           }
-          return `Nothing to do.`;
+          return makeReturn(`Nothing to do.`, STATUS_ERROR);
         }
         if (to && body) {
           return makeReturn(await create(to, body), STATUS_SUCCESS);

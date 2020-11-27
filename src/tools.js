@@ -1,8 +1,8 @@
 const https = require("https");
 
-module.exports.request = (options) =>
-  new Promise((resolve, reject) =>
-    https
+module.exports.request = (options, chunk) =>
+  new Promise((resolve, reject) => {
+    const client = https
       .request(options, (res) => {
         let data = "";
 
@@ -12,9 +12,14 @@ module.exports.request = (options) =>
 
         res.on("end", () => resolve(JSON.parse(data)));
       })
-      .on("error", (error) => reject(error))
-      .end()
-  );
+      .on("error", (error) => reject(error));
+
+    if (chunk) {
+      client.write(chunk);
+    }
+
+    return client.end();
+  });
 
 module.exports.STATUS_ERROR = "400";
 
