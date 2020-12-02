@@ -1,15 +1,26 @@
 {
-    "name": "konexio-backend",
-    "description": "",
-    "version": "0.0.1",
-    "private": true,
-    "dependencies": {
-        "aws-sdk": "^2.437.0"
-    },
-    "devDependencies": {
-        "jest": "^24.7.1"
-    },
-    "scripts": {
-        "test": "jest"
-    }
+  "name": "konexio-backend",
+  "description": "Le code source AWS Lambda et Airtable Sripts de Konexio.",
+  "version": "0.0.1",
+  "author": "Johann Hospice",
+  "scripts": {
+    "test": "dotenv jest",
+    "prezip:layer": "rm -rf nodejs",
+    "zip:layer": "mkdir nodejs && npm prune --production && cp -R node_modules/ nodejs/ && cp package.json nodejs/package.json && cp package-lock.json nodejs/package-lock.json && npm install --only=dev && lambda-zip .lambda-zip/layer.lambda-zip layer.zip -a -v",
+    "postzip:layer": "rm -rf nodejs",
+    "update:layer": "aws lambda publish-layer-version --layer-name nodeModules --zip-file fileb://layer.zip",
+    "deploy:layer": "npm run zip:layer && npm run update:layer"
+  },
+  "private": true,
+  "dependencies": {
+    "airtable": "^0.10.0",
+    "aws-sdk": "^2.776.0",
+    "aws-xray-sdk": "^3.2.0",
+    "twilio": "^3.50.0"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^4.0.0",
+    "eslint": "^7.11.0",
+    "jest": "^26.6.1"
+  }
 }
