@@ -44,8 +44,8 @@ Resources:
   putTwilioMessagesIntoAirtable:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./
-      Handler: src/handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
+      CodeUri: src/
+      Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
       Runtime: nodejs12.x
       Layers:
         - !Ref KonexioBackendDepLayer
