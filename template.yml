@@ -155,8 +155,10 @@ Resources:
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./
+      CodeUri: ./src/
       Handler: src/handlers/create-crossknowledge-learners.createCrossknowledgeLearners
+      Layers:
+        - !Ref KonexioBackendDepLayer
       Runtime: nodejs10.x
       MemorySize: 128
       Timeout: 3
@@ -167,3 +169,16 @@ Resources:
           Properties:
             Path: /crossknowledge/learners
             Method: POST
+
+    KonexioBackendDepLayer:
+      Type: AWS::Serverless::LayerVersion
+      Properties:
+        LayerName: konexio-backend-dependencies
+        Description: Dependencies for konexio backend
+        ContentUri: node_modules/
+        CompatibleRuntimes:
+          - nodejs6.10
+          - nodejs8.10
+          - nodejs10.x
+        LicenseInfo: "MIT"
+        RetentionPolicy: Retain
