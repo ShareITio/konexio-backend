@@ -1,0 +1,95 @@
+# This is the SAM template that represents the architecture of your serverless application
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
+
+# The AWSTemplateFormatVersion identifies the capabilities of the template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+
+# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
+Transform: AWS::Serverless-2016-10-31
+
+# Shared configuration for all resources, more in
+# https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    # Environment:
+    #   Variables:
+    #     STAGE: Development
+    #     AIRTABLE_API_KEY:
+    #     AIRTABLE_BASE:
+    #     CROSSKNOWLEDGE_API_KEY:
+    #     CROSSKNOWLEDGE_HOST:
+    #     ERROR_TOPIC_ARN:
+    #     TWILIO_ACCOUNT_SID:
+    #     TWILIO_AUTH_TOKEN:
+    # The PermissionsBoundary allows users to safely develop with their function's permissions constrained
+    # to their current application. All the functions and roles in this application have to include it and
+    # it has to be manually updated when you add resources to your application.
+    # More information in https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html
+    PermissionsBoundary: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/${AppId}-${AWS::Region}-PermissionsBoundary"
+
+Parameters:
+  AppId:
+    Type: String
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Resources:
+  # Each Lambda function is defined by properties:
+  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+
+  # This is a Lambda function config associated with the source code: put-twilio-messages-into-airtable.js
+  putTwilioMessagesIntoAirtable:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
+      Runtime: nodejs12.x
+      Layers:
+        - !Ref KonexioBackendDepLayer
+      MemorySize: 128
+      Timeout: 20
+      Description: Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable.
+      Policies:
+        # Give Lambda basic execution Permission to the scheduledEventLogger
+        - AWSLambdaBasicExecutionRole
+      Events:
+        SimpleCWEEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
+
+  # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
+  createCrossknowledgeLearners:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
+      Layers:
+        - !Ref KonexioBackendDepLayer
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 3
+      Description: Créé des comptes apprenants dans crossknowledge.
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /crossknowledge/learners
+            Method: POST
+
+  KonexioBackendDepLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: konexio-backend-dependencies
+      Description: Dependencies for konexio-backend
+      ContentUri: lib/
+      CompatibleRuntimes:
+        - nodejs6.10
+        - nodejs8.10
+        - nodejs10.x
+        - nodejs12.x
+      LicenseInfo: "MIT"
+      RetentionPolicy: Retain
