@@ -155,8 +155,8 @@ Resources:
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./src/
-      Handler: src/handlers/create-crossknowledge-learners.createCrossknowledgeLearners
+      CodeUri: src/
+      Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       Layers:
         - !Ref KonexioBackendDepLayer
       Runtime: nodejs10.x
