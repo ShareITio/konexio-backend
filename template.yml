@@ -46,7 +46,7 @@ Resources:
     Properties:
       CodeUri: ./
       Handler: src/handlers/get-all-items.getAllItemsHandler
-      Runtime: nodejs10.x
+      Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 60
       Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
@@ -73,7 +73,7 @@ Resources:
     Properties:
       CodeUri: ./
       Handler: src/handlers/get-by-id.getByIdHandler
-      Runtime: nodejs10.x
+      Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 60
       Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
@@ -100,7 +100,7 @@ Resources:
     Properties:
       CodeUri: ./
       Handler: src/handlers/put-item.putItemHandler
-      Runtime: nodejs10.x
+      Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 60
       Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
@@ -133,23 +133,25 @@ Resources:
         WriteCapacityUnits: 2
 
   # This is a Lambda function config associated with the source code: put-twilio-messages-into-airtable.js
-  # putItemFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     CodeUri: ./
-  #     Handler: src/handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
-  #     Runtime: nodejs10.x
-  #     MemorySize: 128
-  #     Timeout: 20
-  #     Description: Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable.
-  #     Policies:
-  #       # Give Lambda basic execution Permission to the scheduledEventLogger
-  #       - AWSLambdaBasicExecutionRole
-  #     Events:
-  #       SimpleCWEEvent:
-  #         Type: Schedule
-  #         Properties:
-  #           Schedule: rate(15 minutes)
+  putTwilioMessagesIntoAirtable:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
+      Runtime: nodejs12.x
+      Layers:
+        - !Ref KonexioBackendDepLayer
+      MemorySize: 128
+      Timeout: 20
+      Description: Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable.
+      Policies:
+        # Give Lambda basic execution Permission to the scheduledEventLogger
+        - AWSLambdaBasicExecutionRole
+      Events:
+        SimpleCWEEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
@@ -159,7 +161,7 @@ Resources:
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       Layers:
         - !Ref KonexioBackendDepLayer
-      Runtime: nodejs10.x
+      Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 3
       Description: Créé des comptes apprenants dans crossknowledge.
@@ -174,11 +176,11 @@ Resources:
     Type: AWS::Serverless::LayerVersion
     Properties:
       LayerName: konexio-backend-dependencies
-      Description: Dependencies for konexio backend
+      Description: Dependencies for konexio-backend
       ContentUri: node_modules/
       CompatibleRuntimes:
         - nodejs6.10
         - nodejs8.10
-        - nodejs10.x
+        - nodejs12.x
       LicenseInfo: "MIT"
       RetentionPolicy: Retain
