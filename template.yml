@@ -15,6 +15,16 @@ Transform: AWS::Serverless-2016-10-31
 # https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
+    Environment:
+      Variables:
+        STAGE: Development
+        AIRTABLE_API_KEY:
+        AIRTABLE_BASE:
+        CROSSKNOWLEDGE_API_KEY:
+        CROSSKNOWLEDGE_HOST:
+        ERROR_TOPIC_ARN:
+        TWILIO_ACCOUNT_SID:
+        TWILIO_AUTH_TOKEN:
     # The PermissionsBoundary allows users to safely develop with their function's permissions constrained
     # to their current application. All the functions and roles in this application have to include it and
     # it has to be manually updated when you add resources to your application.
@@ -122,3 +132,51 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
+
+  # This is a Lambda function config associated with the source code: put-twilio-messages-into-airtable.js
+  putItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
+      Runtime: nodejs10.x
+      MemorySize: 128
+      Timeout: 20
+      Description: Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable.
+      Policies:
+        # Give Lambda basic execution Permission to the scheduledEventLogger
+        - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          SAMPLE_TABLE: !Ref SampleTable
+      Events:
+        SimpleCWEEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
+                
+  # This is a Lambda function config associated with the source code: put-twilio-messages-into-airtable.js
+  createCrossknowledgeLearners:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/handlers/create-crossknowledge-learners.createCrossknowledgeLearners
+      Runtime: nodejs10.x
+      MemorySize: 128
+      Timeout: 3
+      Description: Créé des comptes apprenants dans crossknowledge.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SampleTable
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          SAMPLE_TABLE: !Ref SampleTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /
+            Method: POST

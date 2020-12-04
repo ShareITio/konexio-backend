@@ -5,7 +5,7 @@ const { createMessage, fetchCandidates } = require("../airtableServices");
 const MINUTES = 15;
 
 // Fonction permettant de récupérer les sms recu de ces 15 derniere minutes sur Twilio et de les envoyer sur airtable
-module.exports.handler = async (event, context) => {
+exports.putTwilioMessagesIntoAirtable = async (event, context) => {
   try {
     console.log(event);
     // throw new Error("Attention le chargement des message n'a pas pu se produire.");
