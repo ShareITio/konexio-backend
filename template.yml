@@ -5,7 +5,6 @@
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  
 
 # Transform section specifies one or more macros that AWS CloudFormation uses to process your template
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
@@ -29,7 +28,7 @@ Globals:
     # to their current application. All the functions and roles in this application have to include it and
     # it has to be manually updated when you add resources to your application.
     # More information in https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html
-    PermissionsBoundary: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/${AppId}-${AWS::Region}-PermissionsBoundary'
+    PermissionsBoundary: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/${AppId}-${AWS::Region}-PermissionsBoundary"
 
 Parameters:
   AppId:
@@ -134,24 +133,24 @@ Resources:
         WriteCapacityUnits: 2
 
   # This is a Lambda function config associated with the source code: put-twilio-messages-into-airtable.js
-  putItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./
-      Handler: src/handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
-      Runtime: nodejs10.x
-      MemorySize: 128
-      Timeout: 20
-      Description: Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable.
-      Policies:
-        # Give Lambda basic execution Permission to the scheduledEventLogger
-        - AWSLambdaBasicExecutionRole
-      Events:
-        SimpleCWEEvent:
-          Type: Schedule
-          Properties:
-            Schedule: rate(15 minutes)
-                
+  # putItemFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: ./
+  #     Handler: src/handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
+  #     Runtime: nodejs10.x
+  #     MemorySize: 128
+  #     Timeout: 20
+  #     Description: Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable.
+  #     Policies:
+  #       # Give Lambda basic execution Permission to the scheduledEventLogger
+  #       - AWSLambdaBasicExecutionRole
+  #     Events:
+  #       SimpleCWEEvent:
+  #         Type: Schedule
+  #         Properties:
+  #           Schedule: rate(15 minutes)
+
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
@@ -166,5 +165,5 @@ Resources:
         Api:
           Type: Api
           Properties:
-            Path: /
+            Path: /crossknowledge/learners
             Method: POST
