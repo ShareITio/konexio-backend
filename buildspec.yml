@@ -12,6 +12,8 @@ phases:
       - rm -rf ./__tests__
       # Remove all dependencies not needed for the Lambda deployment package (the packages from devDependencies in package.json)
       - npm prune --production
+      # Reserve dependencies for lambda layer
+      - mv node_modules lib/nodejs/
   build:
     commands:
       # Use AWS SAM to package the application by using AWS CloudFormation

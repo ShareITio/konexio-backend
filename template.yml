@@ -85,7 +85,7 @@ Resources:
     Properties:
       LayerName: konexio-backend-dependencies
       Description: Dependencies for konexio-backend
-      ContentUri: node_modules/
+      ContentUri: lib/
       CompatibleRuntimes:
         - nodejs6.10
         - nodejs8.10
