@@ -14,16 +14,16 @@ Transform: AWS::Serverless-2016-10-31
 # https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Environment:
-      Variables:
-        STAGE: Development
-        AIRTABLE_API_KEY:
-        AIRTABLE_BASE:
-        CROSSKNOWLEDGE_API_KEY:
-        CROSSKNOWLEDGE_HOST:
-        ERROR_TOPIC_ARN:
-        TWILIO_ACCOUNT_SID:
-        TWILIO_AUTH_TOKEN:
+    # Environment:
+    #   Variables:
+    #     STAGE: Development
+    #     AIRTABLE_API_KEY:
+    #     AIRTABLE_BASE:
+    #     CROSSKNOWLEDGE_API_KEY:
+    #     CROSSKNOWLEDGE_HOST:
+    #     ERROR_TOPIC_ARN:
+    #     TWILIO_ACCOUNT_SID:
+    #     TWILIO_AUTH_TOKEN:
     # The PermissionsBoundary allows users to safely develop with their function's permissions constrained
     # to their current application. All the functions and roles in this application have to include it and
     # it has to be manually updated when you add resources to your application.
