@@ -1,4 +1,0 @@
-src/handlers/scheduled15.js
-src/*
-src/!(handlers)/*
-!node_modules/**/*
