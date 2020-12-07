@@ -1,11 +1,9 @@
-const { create } = require("../twilio");
 const {
   STATUS_ERROR,
   STATUS_SUCCESS,
   makeReturn,
   getInfo,
 } = require("../tools");
-const { getTrainings, getTrainingSession } = require("../crossknowledge");
 const { notifyError } = require("../awsServices");
 const { createLearner } = require("../crossknowledge");
 
@@ -51,7 +49,7 @@ exports.createCrossknowledgeLearners = async (event, context) => {
     throw result;
   } catch (reason) {
     console.error(reason);
-    // await notifyError(reason, event, context);
+    await notifyError(reason, event, context);
     return makeReturn("An error as occured.", STATUS_ERROR);
   }
 };
