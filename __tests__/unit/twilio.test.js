@@ -1,4 +1,11 @@
-const { create, list } = require("../src/twilio");
+const { create, list } = require("../../src/twilio");
+
+jest.mock("twilio", () => () => ({
+  messages: {
+    list: jest.fn(() => []),
+    create: jest.fn(() => true),
+  },
+}));
 
 it("should get sms list", async () => {
   const result = await list(1);
