@@ -14,16 +14,6 @@ Transform: AWS::Serverless-2016-10-31
 # https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    # Environment:
-    #   Variables:
-    #     STAGE: Development
-    #     AIRTABLE_API_KEY:
-    #     AIRTABLE_BASE:
-    #     CROSSKNOWLEDGE_API_KEY:
-    #     CROSSKNOWLEDGE_HOST:
-    #     ERROR_TOPIC_ARN:
-    #     TWILIO_ACCOUNT_SID:
-    #     TWILIO_AUTH_TOKEN:
     # The PermissionsBoundary allows users to safely develop with their function's permissions constrained
     # to their current application. All the functions and roles in this application have to include it and
     # it has to be manually updated when you add resources to your application.
@@ -33,25 +23,9 @@ Globals:
 Parameters:
   AppId:
     Type: String
-  AirtableBase:
-    Type: String
-  AirtableApiKey:
-    Type: String
-  TwilioAccountSid:
-    Type: String
-  TwilioAuthToken:
-    Type: String
-  TwilioPhone:
-    Type: String
-  CrowwknowledgeHost:
-    Type: String
-  CrossknowledgeApiKey:
-    Type: String
-  ErrorTopicArn:
-    Type: String
   EnvType:
     Description: Environment type.
-    Default: test
+    Default: !Ref AWS::EnvType
     Type: String
     AllowedValues:
       - prod
@@ -80,16 +54,6 @@ Resources:
       Policies:
         # Give Lambda basic execution Permission to the scheduledEventLogger
         - AWSLambdaBasicExecutionRole
-      Environment:
-        Variables:
-          AIRTABLE_BASE: !Ref AirtableBase
-          AIRTABLE_API_KEY: !Ref AirtableApiKey
-          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
-          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
-          TWILIO_PHONE: !Ref TwilioPhone
-          CROSSKNOWLEDGE_HOST: !Ref CrowwknowledgeHost
-          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
-          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
   putTwilioMessagesIntoAirtableVersion:
     Type: AWS::Lambda::Version
@@ -129,16 +93,6 @@ Resources:
           Properties:
             Path: /crossknowledge/learners
             Method: POST
-      Environment:
-        Variables:
-          AIRTABLE_BASE: !Ref AirtableBase
-          AIRTABLE_API_KEY: !Ref AirtableApiKey
-          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
-          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
-          TWILIO_PHONE: !Ref TwilioPhone
-          CROSSKNOWLEDGE_HOST: !Ref CrowwknowledgeHost
-          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
-          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion

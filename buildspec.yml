@@ -18,8 +18,8 @@ phases:
   build:
     commands:
       # Use AWS SAM to package the application by using AWS CloudFormation
-      # --output-template template-export.yml
-      - aws cloudformation deploy --template-file template.yml --s3-bucket $S3_BUCKET --parameter-overrides EnvType=${ENV_TYPE} AirtableBase=${AIRTABLE_BASE} AirtableApiKey=${AIRTABLE_API_KEY} TwilioAccountSid=${TWILIO_ACCOUNT_SID} TwilioAuthToken=${TWILIO_AUTH_TOKEN} TwilioPhone=${TWILIO_PHONE} CrowwknowledgeHost=${CROSSKNOWLEDGE_HOST} CrossknowledgeApiKey=${CROSSKNOWLEDGE_API_KEY} ErrorTopicArn=${ERROR_TOPIC_ARN}
+      - aws cloudformation package --template template.yml --s3-bucket $S3_BUCKET --output-template template-export.yml
+      # --parameter-overrides EnvType=${ENV_TYPE} AirtableBase=${AIRTABLE_BASE} AirtableApiKey=${AIRTABLE_API_KEY} TwilioAccountSid=${TWILIO_ACCOUNT_SID} TwilioAuthToken=${TWILIO_AUTH_TOKEN} TwilioPhone=${TWILIO_PHONE} CrowwknowledgeHost=${CROSSKNOWLEDGE_HOST} CrossknowledgeApiKey=${CROSSKNOWLEDGE_API_KEY} ErrorTopicArn=${ERROR_TOPIC_ARN}
 artifacts:
   type: zip
   files:
