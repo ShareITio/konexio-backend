@@ -25,7 +25,7 @@ Parameters:
     Type: String
   EnvType:
     Description: Environment type.
-    Default: !Ref AWS::EnvType
+    Default: test
     Type: String
     AllowedValues:
       - prod
