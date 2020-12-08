@@ -23,16 +23,6 @@ Globals:
 Parameters:
   AppId:
     Type: String
-  EnvType:
-    Description: Environment type.
-    Default: prod
-    Type: String
-    AllowedValues:
-      - prod
-      - test
-    ConstraintDescription: must specify prod or test.
-Conditions:
-  CreateProdResources: !Equals [!Ref EnvType, prod]
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
@@ -57,14 +47,12 @@ Resources:
 
   putTwilioMessagesIntoAirtableVersion:
     Type: AWS::Lambda::Version
-    Condition: CreateProdResources
     Properties:
       FunctionName: !Ref putTwilioMessagesIntoAirtable
       Description: Version de production
 
   putTwilioMessagesIntoAirtableAlias:
     Type: AWS::Lambda::Alias
-    Condition: CreateProdResources
     Properties:
       FunctionName: !Ref putTwilioMessagesIntoAirtable
       FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
