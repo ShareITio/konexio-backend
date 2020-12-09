@@ -88,6 +88,16 @@ Resources:
     Properties:
       FunctionName: !Ref putTwilioMessagesIntoAirtable
       Description: Version de production
+      Environment:
+        Variables:
+          AIRTABLE_BASE: !Ref AirtableBase
+          AIRTABLE_API_KEY: !Ref AirtableApiKey
+          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          TWILIO_PHONE: !Ref TwilioPhone
+          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
+          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
+          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
   putTwilioMessagesIntoAirtableAlias:
     Type: AWS::Lambda::Alias
@@ -101,20 +111,11 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: rate(15 minutes)
-      Environment:
-        Variables:
-          AIRTABLE_BASE: !Ref AirtableBase
-          AIRTABLE_API_KEY: !Ref AirtableApiKey
-          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
-          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
-          TWILIO_PHONE: !Ref TwilioPhone
-          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
-          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
-          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
+    Condition: NotCreateProdResources
     Properties:
       CodeUri: src/
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
@@ -143,6 +144,7 @@ Resources:
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
+    Condition: NotCreateProdResources
     Properties:
       LayerName: konexio-backend-dependencies
       Description: Dependencies for konexio-backend
