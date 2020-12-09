@@ -46,8 +46,8 @@ Parameters:
     Type: String
   ErrorTopicArn:
     Type: String
-Conditions:
-  CreateProdResources: !Equals [!Ref Purpose, production]
+# Conditions:
+#   CreateProdResources: !Equals [!Ref Purpose, production]
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
@@ -67,34 +67,34 @@ Resources:
       Timeout: 20
       Description: Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable.
 
-  putTwilioMessagesIntoAirtableVersion:
-    Type: AWS::Lambda::Version
-    Properties:
-      FunctionName: !Ref putTwilioMessagesIntoAirtable
-      Description: Version pre-production
-      Environment:
-        Variables:
-          AIRTABLE_BASE: !Ref AirtableBase
-          AIRTABLE_API_KEY: !Ref AirtableApiKey
-          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
-          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
-          TWILIO_PHONE: !Ref TwilioPhone
-          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
-          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
-          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
+  # putTwilioMessagesIntoAirtableVersion:
+  #   Type: AWS::Lambda::Version
+  #   Properties:
+  #     FunctionName: !Ref putTwilioMessagesIntoAirtable
+  #     Description: Version pre-production
+  #     Environment:
+  #       Variables:
+  #         AIRTABLE_BASE: !Ref AirtableBase
+  #         AIRTABLE_API_KEY: !Ref AirtableApiKey
+  #         TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+  #         TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+  #         TWILIO_PHONE: !Ref TwilioPhone
+  #         CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
+  #         CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
+  #         ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
-  putTwilioMessagesIntoAirtableAlias:
-    Type: AWS::Lambda::Alias
-    Condition: CreateProdResources
-    Properties:
-      FunctionName: !Ref putTwilioMessagesIntoAirtable
-      FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
-      Name: Production
-      Events:
-        SimpleCWEEvent:
-          Type: Schedule
-          Properties:
-            Schedule: rate(15 minutes)
+  # putTwilioMessagesIntoAirtableAlias:
+  #   Type: AWS::Lambda::Alias
+  #   Condition: CreateProdResources
+  #   Properties:
+  #     FunctionName: !Ref putTwilioMessagesIntoAirtable
+  #     FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
+  #     Name: Production
+  #     Events:
+  #       SimpleCWEEvent:
+  #         Type: Schedule
+  #         Properties:
+  #           Schedule: rate(15 minutes)
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
@@ -114,17 +114,22 @@ Resources:
           Properties:
             Path: /crossknowledge/learners
             Method: POST
-      Environment:
-        Variables:
-          AIRTABLE_BASE: !Ref AirtableBase
-          AIRTABLE_API_KEY: !Ref AirtableApiKey
-          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
-          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
-          TWILIO_PHONE: !Ref TwilioPhone
-          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
-          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
-          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
+  # createCrossknowledgeLearnersVersion:
+  #   Type: AWS::Lambda::Version
+  #   Properties:
+  #     FunctionName: !Ref createCrossknowledgeLearners
+  #     Description: Version pre-production
+  #     Environment:
+  #       Variables:
+  #         AIRTABLE_BASE: !Ref AirtableBase
+  #         AIRTABLE_API_KEY: !Ref AirtableApiKey
+  #         TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+  #         TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+  #         TWILIO_PHONE: !Ref TwilioPhone
+  #         CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
+  #         CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
+  #         ERROR_TOPIC_ARN: !Ref ErrorTopicArn
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
