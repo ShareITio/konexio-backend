@@ -30,6 +30,22 @@ Parameters:
       - testing
       - production
     Description: The purpose of this instance.
+  AirtableBase:
+    Type: String
+  AirtableApiKey:
+    Type: String
+  TwilioAccountSid:
+    Type: String
+  TwilioAuthToken:
+    Type: String
+  TwilioPhone:
+    Type: String
+  CrowwknowledgeHost:
+    Type: String
+  CrossknowledgeApiKey:
+    Type: String
+  ErrorTopicArn:
+    Type: String
 Conditions:
   CreateProdResources: !Equals [!Ref Purpose, production]
 # Resources declares the AWS resources that you want to include in the stack
@@ -41,6 +57,7 @@ Resources:
   # This is a Lambda function config associated with the source code: put-twilio-messages-into-airtable.js
   putTwilioMessagesIntoAirtable:
     Type: AWS::Serverless::Function
+    Condition: !Not CreateProdResources
     Properties:
       CodeUri: src/
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
@@ -53,6 +70,16 @@ Resources:
       Policies:
         # Give Lambda basic execution Permission to the scheduledEventLogger
         - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          AIRTABLE_BASE: !Ref AirtableBase
+          AIRTABLE_API_KEY: !Ref AirtableApiKey
+          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          TWILIO_PHONE: !Ref TwilioPhone
+          CROSSKNOWLEDGE_HOST: !Ref CrowwknowledgeHost
+          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
+          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
   putTwilioMessagesIntoAirtableVersion:
     Type: AWS::Lambda::Version
@@ -73,6 +100,16 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: rate(15 minutes)
+      Environment:
+        Variables:
+          AIRTABLE_BASE: !Ref AirtableBase
+          AIRTABLE_API_KEY: !Ref AirtableApiKey
+          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          TWILIO_PHONE: !Ref TwilioPhone
+          CROSSKNOWLEDGE_HOST: !Ref CrowwknowledgeHost
+          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
+          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
@@ -92,6 +129,16 @@ Resources:
           Properties:
             Path: /crossknowledge/learners
             Method: POST
+      Environment:
+        Variables:
+          AIRTABLE_BASE: !Ref AirtableBase
+          AIRTABLE_API_KEY: !Ref AirtableApiKey
+          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          TWILIO_PHONE: !Ref TwilioPhone
+          CROSSKNOWLEDGE_HOST: !Ref CrowwknowledgeHost
+          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
+          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
