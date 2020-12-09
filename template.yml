@@ -40,7 +40,7 @@ Parameters:
     Type: String
   TwilioPhone:
     Type: String
-  CrowwknowledgeHost:
+  CrossknowledgeHost:
     Type: String
   CrossknowledgeApiKey:
     Type: String
@@ -77,7 +77,7 @@ Resources:
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
           TWILIO_PHONE: !Ref TwilioPhone
-          CROSSKNOWLEDGE_HOST: !Ref CrowwknowledgeHost
+          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
@@ -107,7 +107,7 @@ Resources:
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
           TWILIO_PHONE: !Ref TwilioPhone
-          CROSSKNOWLEDGE_HOST: !Ref CrowwknowledgeHost
+          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
@@ -136,7 +136,7 @@ Resources:
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
           TWILIO_PHONE: !Ref TwilioPhone
-          CROSSKNOWLEDGE_HOST: !Ref CrowwknowledgeHost
+          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
