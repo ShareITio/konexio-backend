@@ -120,7 +120,7 @@ Resources:
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
   putTwilioMessagesIntoAirtableProductionVersion:
     Type: AWS::Lambda::Version
-    Condition: CreateProdResources
+    # Condition: CreateProdResources
     Properties:
       FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
       Description: Version créée automatiquement depuis AWS Cloudformation.
