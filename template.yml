@@ -77,23 +77,23 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
-  putTwilioMessagesIntoAirtableVersion:
-    Type: AWS::Lambda::Version
-    Properties:
-      FunctionName: !Ref putTwilioMessagesIntoAirtable
-      Description: Version créée automatiquement depuis AWS Cloudformation.
-  putTwilioMessagesIntoAirtableAlias:
-    Type: AWS::Lambda::Alias
-    Condition: CreateProdResources
-    Properties:
-      FunctionName: !Ref putTwilioMessagesIntoAirtable
-      FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
-      Name: Production
-      Events:
-        SimpleCWEEvent:
-          Type: Schedule
-          Properties:
-            Schedule: rate(15 minutes)
+  # putTwilioMessagesIntoAirtableVersion:
+  #   Type: AWS::Lambda::Version
+  #   Properties:
+  #     FunctionName: !Ref putTwilioMessagesIntoAirtable
+  #     Description: Version créée automatiquement depuis AWS Cloudformation.
+  # putTwilioMessagesIntoAirtableAlias:
+  #   Type: AWS::Lambda::Alias
+  #   Condition: CreateProdResources
+  #   Properties:
+  #     FunctionName: !Ref putTwilioMessagesIntoAirtable
+  #     FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
+  #     Name: Production
+  #     Events:
+  #       SimpleCWEEvent:
+  #         Type: Schedule
+  #         Properties:
+  #           Schedule: rate(15 minutes)
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
@@ -123,11 +123,11 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
-  createCrossknowledgeLearnersVersion:
-    Type: AWS::Lambda::Version
-    Properties:
-      FunctionName: !Ref createCrossknowledgeLearners
-      Description: Version créée automatiquement depuis AWS Cloudformation.
+  # createCrossknowledgeLearnersVersion:
+  #   Type: AWS::Lambda::Version
+  #   Properties:
+  #     FunctionName: !Ref createCrossknowledgeLearners
+  #     Description: Version créée automatiquement depuis AWS Cloudformation.
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
