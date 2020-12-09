@@ -68,7 +68,7 @@ Resources:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
   # This is a Lambda function config associated with the source code: put-twilio-messages-into-airtable.js
-  putTwilioMessagesIntoAirtable:
+  putTwilioMessagesIntoAirtableDevelop:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
@@ -78,7 +78,7 @@ Resources:
         - !Ref KonexioBackendDepLayer
       MemorySize: 128
       Timeout: 20
-      Description: Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable.
+      Description: "DEVELOP : Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
@@ -102,7 +102,7 @@ Resources:
         - !Ref KonexioBackendDepLayer
       MemorySize: 128
       Timeout: 20
-      Description: Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable.
+      Description: "PRODUCTION : Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBaseProduction
@@ -119,21 +119,21 @@ Resources:
     Properties:
       FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
       Description: Version créée automatiquement depuis AWS Cloudformation.
-  # putTwilioMessagesIntoAirtableProductionAlias:
-  #   Type: AWS::Lambda::Alias
-  #   Condition: CreateProdResources
-  #   Properties:
-  #     FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
-  #     FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableProductionVersion.Version
-  #     Name: Production
-  #     Events:
-  #       SimpleCWEEvent:
-  #         Type: Schedule
-  #         Properties:
-  #           Schedule: rate(15 minutes)
+  putTwilioMessagesIntoAirtableProductionAlias:
+    Type: AWS::Lambda::Alias
+    Condition: CreateProdResources
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
+      FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableProductionVersion.Version
+      Name: Production
+      Events:
+        SimpleCWEEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
-  createCrossknowledgeLearners:
+  createCrossknowledgeLearnersDevelop:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
@@ -143,7 +143,7 @@ Resources:
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 3
-      Description: Créé des comptes apprenants dans crossknowledge.
+      Description: "DEVELOP : Créé des comptes apprenants dans crossknowledge."
       Events:
         Api:
           Type: Api
@@ -160,11 +160,6 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
-  # createCrossknowledgeLearnersVersion:
-  #   Type: AWS::Lambda::Version
-  #   Properties:
-  #     FunctionName: !Ref createCrossknowledgeLearners
-  #     Description: Version créée automatiquement depuis AWS Cloudformation.
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
