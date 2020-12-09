@@ -44,7 +44,16 @@ exports.createCrossknowledgeLearners = async (event, context) => {
     );
     if (result.every(({ message }) => message === "OK")) {
       console.log(result);
-      return makeReturn(`Added ${result.length}`, STATUS_SUCCESS);
+      return makeReturn(
+        {
+          message: `Added ${result.length}`,
+          data: result.map(({ value }) => ({
+            guid: value[0].guid,
+            login: value[0].login,
+          })),
+        },
+        STATUS_SUCCESS
+      );
     }
     throw result;
   } catch (reason) {

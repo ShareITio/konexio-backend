@@ -3,7 +3,7 @@ const AWS = require("aws-sdk");
 AWS.config.update({ region: "eu-west-3" });
 const SNS = new AWS.SNS();
 
-module.exports.notifyError = (error, event, context) => {
+module.exports.notifyError = (error, event, context, ...extra) => {
   const date = new Date(event.time);
 
   const datestring = `${[
@@ -24,6 +24,7 @@ module.exports.notifyError = (error, event, context) => {
         {
           event,
           context,
+          extra,
         },
         null,
         2
