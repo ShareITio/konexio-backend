@@ -32,22 +32,32 @@ Parameters:
     Description: The purpose of this instance.
   AirtableBase:
     Type: String
+    NoEcho: true
   AirtableBaseProduction:
     Type: String
+    Default: _
+    NoEcho: true
   AirtableApiKey:
     Type: String
+    NoEcho: true
   TwilioAccountSid:
     Type: String
+    NoEcho: true
   TwilioAuthToken:
     Type: String
+    NoEcho: true
   TwilioPhone:
     Type: String
+    NoEcho: true
   CrossknowledgeHost:
     Type: String
+    NoEcho: true
   CrossknowledgeApiKey:
     Type: String
+    NoEcho: true
   ErrorTopicArn:
     Type: String
+    NoEcho: true
 Conditions:
   CreateProdResources: !Equals [!Ref Purpose, production]
   # NotCreateProdResources: !Not [Condition: CreateProdResources]
