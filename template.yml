@@ -23,6 +23,15 @@ Globals:
 Parameters:
   AppId:
     Type: String
+  Purpose:
+    Type: String
+    Default: testing
+    AllowedValues:
+      - testing
+      - production
+    Description: The purpose of this instance.
+Conditions:
+  CreateProdResources: !Equals [!Ref Purpose, production]
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
@@ -44,6 +53,26 @@ Resources:
       Policies:
         # Give Lambda basic execution Permission to the scheduledEventLogger
         - AWSLambdaBasicExecutionRole
+
+  putTwilioMessagesIntoAirtableVersion:
+    Type: AWS::Lambda::Version
+    Condition: CreateProdResources
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtable
+      Description: Version de production
+
+  putTwilioMessagesIntoAirtableAlias:
+    Type: AWS::Lambda::Alias
+    Condition: CreateProdResources
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtable
+      FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
+      Name: Production
+      Events:
+        SimpleCWEEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
