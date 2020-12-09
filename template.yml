@@ -48,7 +48,7 @@ Parameters:
     Type: String
 Conditions:
   CreateProdResources: !Equals [!Ref Purpose, production]
-  NotCreateProdResources: !Not [!Condition: CreateProdResources]
+  NotCreateProdResources: !Not [Condition: CreateProdResources]
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
