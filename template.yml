@@ -118,12 +118,12 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
-  putTwilioMessagesIntoAirtableProductionVersion:
-    Type: AWS::Lambda::Version
-    # Condition: CreateProdResources
-    Properties:
-      FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
-      Description: Version créée automatiquement depuis AWS Cloudformation.
+  # putTwilioMessagesIntoAirtableProductionVersion:
+  #   Type: AWS::Lambda::Version
+  #   # Condition: CreateProdResources
+  #   Properties:
+  #     FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
+  #     Description: Version créée automatiquement depuis AWS Cloudformation.
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearnersDevelop:
