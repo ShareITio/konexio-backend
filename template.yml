@@ -48,6 +48,7 @@ Parameters:
     Type: String
 Conditions:
   CreateProdResources: !Equals [!Ref Purpose, production]
+  NotCreateProdResources: !Not [!Condition: CreateProdResources]
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
@@ -80,19 +81,19 @@ Resources:
     Type: AWS::Lambda::Version
     Properties:
       FunctionName: !Ref putTwilioMessagesIntoAirtable
-      Description: Version pre-production
-  # putTwilioMessagesIntoAirtableAlias:
-  #   Type: AWS::Lambda::Alias
-  #   Condition: CreateProdResources
-  #   Properties:
-  #     FunctionName: !Ref putTwilioMessagesIntoAirtable
-  #     FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
-  #     Name: Production
-  #     Events:
-  #       SimpleCWEEvent:
-  #         Type: Schedule
-  #         Properties:
-  #           Schedule: rate(15 minutes)
+      Description: Version créée automatiquement depuis AWS Cloudformation.
+  putTwilioMessagesIntoAirtableAlias:
+    Type: AWS::Lambda::Alias
+    Condition: CreateProdResources
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtable
+      FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
+      Name: Production
+      Events:
+        SimpleCWEEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
@@ -126,7 +127,7 @@ Resources:
     Type: AWS::Lambda::Version
     Properties:
       FunctionName: !Ref createCrossknowledgeLearners
-      Description: Version pre-production
+      Description: Version créée automatiquement depuis AWS Cloudformation.
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
