@@ -32,6 +32,8 @@ Parameters:
     Description: The purpose of this instance.
   AirtableBase:
     Type: String
+  AirtableBaseProduction:
+    Type: String
   AirtableApiKey:
     Type: String
   TwilioAccountSid:
@@ -77,17 +79,39 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
-  # putTwilioMessagesIntoAirtableVersion:
-  #   Type: AWS::Lambda::Version
-  #   Properties:
-  #     FunctionName: !Ref putTwilioMessagesIntoAirtable
-  #     Description: Version créée automatiquement depuis AWS Cloudformation.
-  # putTwilioMessagesIntoAirtableAlias:
+  putTwilioMessagesIntoAirtableProduction:
+    Type: AWS::Serverless::Function
+    Condition: CreateProdResources
+    Properties:
+      CodeUri: src/
+      Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
+      Runtime: nodejs12.x
+      Layers:
+        - !Ref KonexioBackendDepLayer
+      MemorySize: 128
+      Timeout: 20
+      Description: Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable.
+      Environment:
+        Variables:
+          AIRTABLE_BASE: !Ref AirtableBaseProduction
+          AIRTABLE_API_KEY: !Ref AirtableApiKey
+          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          TWILIO_PHONE: !Ref TwilioPhone
+          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
+          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
+          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
+  putTwilioMessagesIntoAirtableProductionVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
+      Description: Version créée automatiquement depuis AWS Cloudformation.
+  # putTwilioMessagesIntoAirtableProductionAlias:
   #   Type: AWS::Lambda::Alias
   #   Condition: CreateProdResources
   #   Properties:
-  #     FunctionName: !Ref putTwilioMessagesIntoAirtable
-  #     FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
+  #     FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
+  #     FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableProductionVersion.Version
   #     Name: Production
   #     Events:
   #       SimpleCWEEvent:
