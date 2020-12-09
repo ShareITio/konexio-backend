@@ -71,7 +71,7 @@ Resources:
     Type: AWS::Lambda::Version
     Properties:
       FunctionName: !Ref putTwilioMessagesIntoAirtable
-      Description: Version de production
+      Description: Version pre-production
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
