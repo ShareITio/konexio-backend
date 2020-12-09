@@ -46,8 +46,8 @@ Parameters:
     Type: String
   ErrorTopicArn:
     Type: String
-# Conditions:
-#   CreateProdResources: !Equals [!Ref Purpose, production]
+Conditions:
+  CreateProdResources: !Equals [!Ref Purpose, production]
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
@@ -66,12 +66,6 @@ Resources:
       MemorySize: 128
       Timeout: 20
       Description: Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable.
-
-  putTwilioMessagesIntoAirtableVersion:
-    Type: AWS::Lambda::Version
-    Properties:
-      FunctionName: !Ref putTwilioMessagesIntoAirtable
-      Description: Version pre-production
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
@@ -82,7 +76,11 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
-
+  putTwilioMessagesIntoAirtableVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtable
+      Description: Version pre-production
   # putTwilioMessagesIntoAirtableAlias:
   #   Type: AWS::Lambda::Alias
   #   Condition: CreateProdResources
@@ -114,12 +112,6 @@ Resources:
           Properties:
             Path: /crossknowledge/learners
             Method: POST
-
-  createCrossknowledgeLearnersVersion:
-    Type: AWS::Lambda::Version
-    Properties:
-      FunctionName: !Ref createCrossknowledgeLearners
-      Description: Version pre-production
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
@@ -130,6 +122,11 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
+  createCrossknowledgeLearnersVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref createCrossknowledgeLearners
+      Description: Version pre-production
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
