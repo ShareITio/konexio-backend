@@ -2,10 +2,12 @@ version: 0.2
 phases:
   install:
     commands:
+      - echo "[Install phase]"
       # Install all dependencies (including dependencies for running tests)
       - npm install
   pre_build:
     commands:
+      - echo "[Pre-Build phase]"
       # Discover and run unit tests in the '__tests__' directory
       - npm run test
       # Remove all unit tests to reduce the size of the package that will be ultimately uploaded to Lambda
@@ -17,8 +19,10 @@ phases:
       - cp -R node_modules lib/nodejs/
   build:
     commands:
+      - echo "[Build phase]"
+      - echo "Starting SAM packaging `date` in `pwd`"
       # Use AWS SAM to package the application by using AWS CloudFormation
-      - aws cloudformation package --template template.master.yml --s3-bucket $S3_BUCKET --output-template template-export.yml
+      - aws cloudformation package --template template.yml --s3-bucket $S3_BUCKET --output-template template-export.yml
       # - echo "${ENV_TYPE}"
       # - |
       #   if [ "$ENV_TYPE" = "prod" ] ; then
