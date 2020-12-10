@@ -93,7 +93,6 @@ Resources:
   # This is a Lambda function config in PRODUCTION associated with the source code: put-twilio-messages-into-airtable.js
   putTwilioMessagesIntoAirtableProduction:
     Type: AWS::Serverless::Function
-    Condition: CreateProdResources
     Properties:
       CodeUri: src/
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
@@ -113,12 +112,12 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
-  # putTwilioMessagesIntoAirtableProductionVersion:
-  #   Type: AWS::Lambda::Version
-  #   Condition: CreateProdResources
-  #   Properties:
-  #     FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
-  #     Description: Version créée automatiquement depuis AWS Cloudformation.
+  putTwilioMessagesIntoAirtableProductionVersion:
+    Type: AWS::Lambda::Version
+    Condition: CreateProdResources
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
+      Description: Version créée automatiquement depuis AWS Cloudformation.
   # putTwilioMessagesIntoAirtableProductionAlias:
   #   Type: AWS::Lambda::Alias
   #   Properties:
