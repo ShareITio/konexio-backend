@@ -86,7 +86,7 @@ Resources:
         Schedule:
           Type: Schedule
           Properties:
-            Schedule: 'rate(15 minute)'
+            Schedule: rate(15 minutes)
             Name: Schedule15minutes
             Description: Déclenché toutes les 15 minutes
             Enabled: !If [CreateProdResources, true, false]
