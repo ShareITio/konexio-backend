@@ -103,11 +103,6 @@ Resources:
       MemorySize: 128
       Timeout: 20
       Description: "PRODUCTION : Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
-      Events:
-        SimpleCWEEvent:
-          Type: Schedule
-          Properties:
-            Schedule: rate(15 minutes)
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBaseProduction
@@ -118,12 +113,23 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
-  # putTwilioMessagesIntoAirtableProductionVersion:
-  #   Type: AWS::Lambda::Version
-  #   # Condition: CreateProdResources
-  #   Properties:
-  #     FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
-  #     Description: Version créée automatiquement depuis AWS Cloudformation.
+  putTwilioMessagesIntoAirtableProductionVersion:
+    Type: AWS::Lambda::Version
+    Condition: CreateProdResources
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
+      Description: Version créée automatiquement depuis AWS Cloudformation.
+  putTwilioMessagesIntoAirtableProductionAlias:
+    Type: AWS::Lambda::Alias
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
+      FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableProductionVersion.Version
+      Name: Production
+      # Events:
+      #   SimpleCWEEvent:
+      #     Type: Schedule
+      #     Properties:
+      #       Schedule: rate(15 minutes)
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearnersDevelop:
