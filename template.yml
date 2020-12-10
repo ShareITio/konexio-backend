@@ -71,17 +71,17 @@ Resources:
   putTwilioMessagesIntoAirtable:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 20
       CodeUri: src/
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
       AutoPublishAlias: live
       DeploymentPreference:
         Type: !If [CreateProdResources, Linear10PercentEvery1Minute, AllAtOnce]
-      Runtime: nodejs12.x
       Layers:
         - !Ref KonexioBackendDepLayer
-      MemorySize: 128
-      Timeout: 20
-      Description: "Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
       Events:
         Schedule:
           Type: Schedule
@@ -102,24 +102,24 @@ Resources:
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
-  createCrossknowledgeLearnersDevelop:
+  createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
     Properties:
+      Description: "Créé des comptes apprenants dans crossknowledge."
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 3
       CodeUri: src/
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       Layers:
         - !Ref KonexioBackendDepLayer
-      Runtime: nodejs12.x
-      MemorySize: 128
-      Timeout: 3
-      Description: "DEVELOP : Créé des comptes apprenants dans crossknowledge."
       Events:
-        Api:
+        ApiEvent:
           Type: Api
           Properties:
-            RestApiId: !Ref MyApi
-            Path: /crossknowledge/learners
             Method: POST
+            Path: /crossknowledge/learners
+            RestApiId: !Ref ApiGatewayApi
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
@@ -130,7 +130,7 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
-  MyApi:
+  ApiGatewayApi:
     Type: AWS::Serverless::Api
     Properties:
       StageName: !Ref Purpose
