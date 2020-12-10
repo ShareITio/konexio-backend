@@ -120,6 +120,7 @@ Resources:
       Description: Version créée automatiquement depuis AWS Cloudformation.
   putTwilioMessagesIntoAirtableProductionAlias:
     Type: AWS::Lambda::Alias
+    Condition: CreateProdResources
     Properties:
       FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
       FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableProductionVersion.Version
