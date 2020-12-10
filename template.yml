@@ -68,17 +68,20 @@ Resources:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
   # This is a Lambda function config associated with the source code: put-twilio-messages-into-airtable.js
-  putTwilioMessagesIntoAirtableDevelop:
+  putTwilioMessagesIntoAirtable:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Type: !If [IsProd, Linear10PercentEvery1Minute, AllAtOnce]
       Runtime: nodejs12.x
       Layers:
         - !Ref KonexioBackendDepLayer
       MemorySize: 128
       Timeout: 20
-      Description: "DEVELOP : Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
+      Description: "Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
@@ -90,58 +93,36 @@ Resources:
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
-  # This is a Lambda function config in PRODUCTION associated with the source code: put-twilio-messages-into-airtable.js
-  putTwilioMessagesIntoAirtableProduction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/
-      Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
-      Runtime: nodejs12.x
-      Layers:
-        - !Ref KonexioBackendDepLayer
-      MemorySize: 128
-      Timeout: 20
-      Description: "PRODUCTION : Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
-      Environment:
-        Variables:
-          AIRTABLE_BASE: !Ref AirtableBaseProduction
-          AIRTABLE_API_KEY: !Ref AirtableApiKey
-          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
-          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
-          TWILIO_PHONE: !Ref TwilioPhone
-          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
-          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
-          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
-  putTwilioMessagesIntoAirtableProductionVersion:
-    Type: AWS::Lambda::Version
-    Properties:
-      FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
-      Description: Version créée automatiquement depuis AWS Cloudformation.
-  putTwilioMessagesIntoAirtableProductionAlias:
-    Type: AWS::Lambda::Alias
-    Condition: CreateProdResources
-    Properties:
-      FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
-      FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableProductionVersion.Version
-      Name: Production
   ScheduledRule:
     Type: AWS::Events::Rule
-    Condition: CreateProdResources
     Properties:
       Description: Déclenché toutes les 15 minutes
       ScheduleExpression: rate(15 minutes)
       State: ENABLED
       Targets:
-        - Arn: !Ref putTwilioMessagesIntoAirtableProductionAlias
-        - Id: Production
+        - Arn: !GetAtt putTwilioMessagesIntoAirtable.Arn
+        - Id: live
   PermissionForEventsToInvokeLambda:
     Type: AWS::Lambda::Permission
-    Condition: CreateProdResources
     Properties:
-      FunctionName: !Ref putTwilioMessagesIntoAirtableProductionAlias
+      FunctionName: !Ref putTwilioMessagesIntoAirtable
       Action: lambda:InvokeFunction
       Principal: events.amazonaws.com
       SourceArn: !GetAtt ScheduledRule.Arn
+
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Purpose
+      TracingEnabled: true
+      Auth:
+        ApiKeyRequired: true
+      Cors:
+        AllowMethods: "'POST, GET'"
+        AllowHeaders: "'*''"
+        AllowOrigin: "'*''"
+        MaxAge: "'600'"
+        AllowCredentials: True
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearnersDevelop:
@@ -159,6 +140,7 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref MyApi
             Path: /crossknowledge/learners
             Method: POST
       Environment:
