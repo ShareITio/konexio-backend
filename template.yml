@@ -77,7 +77,7 @@ Resources:
       Timeout: 20
       CodeUri: src/
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
-      AutoPublishAlias: !If [CreateProdResources, testing, production]
+      AutoPublishAlias: !If [CreateProdResources, "production", !Ref "AWS::NoValue"]
       DeploymentPreference:
         Type: !If [CreateProdResources, Linear10PercentEvery1Minute, AllAtOnce]
       Layers:
