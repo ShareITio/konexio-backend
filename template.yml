@@ -125,11 +125,22 @@ Resources:
       FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
       FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableProductionVersion.Version
       Name: Production
-      Events:
-        SimpleCWEEvent:
-          Type: Schedule
-          Properties:
-            Schedule: rate(15 minutes)
+  # ScheduledRule:
+  #   Type: AWS::Events::Rule
+  #   Properties:
+  #     Description: ScheduledRule
+  #     ScheduleExpression: rate(15 minutes)
+  #     State: ENABLED
+  #     Targets:
+  #       - Arn: !Ref putTwilioMessagesIntoAirtableProductionAlias
+  #       - Id: TargetFunctionV1
+  # PermissionForEventsToInvokeLambda:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     FunctionName: !Ref putTwilioMessagesIntoAirtableProductionAlias
+  #     Action: lambda:InvokeFunction
+  #     Principal: events.amazonaws.com
+  #     SourceArn: !GetAtt ScheduledRule.Arn
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearnersDevelop:
