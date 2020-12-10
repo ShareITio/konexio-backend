@@ -114,7 +114,6 @@ Resources:
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
   putTwilioMessagesIntoAirtableProductionVersion:
     Type: AWS::Lambda::Version
-    Condition: CreateProdResources
     Properties:
       FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
       Description: Version créée automatiquement depuis AWS Cloudformation.
@@ -125,22 +124,22 @@ Resources:
       FunctionName: !Ref putTwilioMessagesIntoAirtableProduction
       FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableProductionVersion.Version
       Name: Production
-  # ScheduledRule:
-  #   Type: AWS::Events::Rule
-  #   Properties:
-  #     Description: ScheduledRule
-  #     ScheduleExpression: rate(15 minutes)
-  #     State: ENABLED
-  #     Targets:
-  #       - Arn: !Ref putTwilioMessagesIntoAirtableProductionAlias
-  #       - Id: TargetFunctionV1
-  # PermissionForEventsToInvokeLambda:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !Ref putTwilioMessagesIntoAirtableProductionAlias
-  #     Action: lambda:InvokeFunction
-  #     Principal: events.amazonaws.com
-  #     SourceArn: !GetAtt ScheduledRule.Arn
+  ScheduledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Déclenché toutes les 15 minutes
+      ScheduleExpression: rate(15 minutes)
+      State: ENABLED
+      Targets:
+        - Arn: !Ref putTwilioMessagesIntoAirtableProductionAlias
+        - Id: Production
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtableProductionAlias
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt ScheduledRule.Arn
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearnersDevelop:
