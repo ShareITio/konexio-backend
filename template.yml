@@ -126,6 +126,7 @@ Resources:
       Name: Production
   ScheduledRule:
     Type: AWS::Events::Rule
+    Condition: CreateProdResources
     Properties:
       Description: Déclenché toutes les 15 minutes
       ScheduleExpression: rate(15 minutes)
@@ -135,6 +136,7 @@ Resources:
         - Id: Production
   PermissionForEventsToInvokeLambda:
     Type: AWS::Lambda::Permission
+    Condition: CreateProdResources
     Properties:
       FunctionName: !Ref putTwilioMessagesIntoAirtableProductionAlias
       Action: lambda:InvokeFunction
