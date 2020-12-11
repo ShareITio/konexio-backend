@@ -110,7 +110,6 @@ Resources:
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
-    Condition: IsNotProduction
     Properties:
       FunctionName: !Sub "createCrossknowledgeLearners_${Purpose}"
       Description: "Créé des comptes apprenants dans crossknowledge."
@@ -139,7 +138,6 @@ Resources:
   # This is a Lambda function config associated with the source code: create-crossknowledge-sessions.js
   createCrossknowledgeSessions:
     Type: AWS::Serverless::Function
-    Condition: IsNotProduction
     Properties:
       FunctionName: !Sub "createCrossknowledgeSessions_${Purpose}"
       Description: "Créé des sessions dans crossknowledge et les lie à des apprenants."
@@ -167,16 +165,17 @@ Resources:
 
   ApiGatewayApi:
     Type: AWS::Serverless::Api
-    Condition: IsNotProduction
     Properties:
       StageName: !Ref Purpose
       TracingEnabled: true
       Auth:
         ApiKeyRequired: true
       Cors:
-        AllowMethods: "'OPTIONS,POST,GET,PUT,DELETE,HEAD,PATCH'"
+        AllowMethods: "'POST'"
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
-        AllowOrigin: "'*'"
+        AllowOrigin: "'airtable.com'"
+        MaxAge: "'600'"
+        AllowCredentials: True
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
