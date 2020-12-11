@@ -82,6 +82,7 @@ Resources:
       Description: "Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
       Timeout: 20
+      CodeUri: src/
       AutoPublishAlias: live # !If [IsProduction, production, !Ref "AWS::NoValue"]
       DeploymentPreference:
         Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
@@ -114,6 +115,7 @@ Resources:
       FunctionName: !Sub "createCrossknowledgeLearners_${Purpose}"
       Description: "Créé des comptes apprenants dans crossknowledge."
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
+      CodeUri: src/
       Layers:
         - !Ref KonexioBackendDepLayer
       Events:
