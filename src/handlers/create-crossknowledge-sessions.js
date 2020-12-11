@@ -7,8 +7,8 @@ const {
 const { notifyError } = require("../awsServices");
 const { createSession, registerSession } = require("../crossknowledge");
 
-// Créé des comptes apprenants dans crossknowledge
-exports.createCrossknowledgeSession = async (event, context) => {
+// Créé des session avec utilisateurs enregistrés dans crossknowledge
+exports.createCrossknowledgeSessions = async (event, context) => {
   try {
     const {
       body: { data },
