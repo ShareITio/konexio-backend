@@ -63,3 +63,28 @@ module.exports.createLearner = (
     postData
   );
 };
+
+module.exports.createSession = (
+  trainingGUID,
+  { title, start, end, welcomeText }
+) => {
+  const postData = querystring.stringify({ title, start, end, welcomeText });
+  console.log("postData", postData);
+  return request(
+    {
+      hostname: process.env.CROSSKNOWLEDGE_HOST,
+      path: `/API/ADMIN/v1/REST/Training/${trainingGUID}/Session/`,
+      method: "POST",
+      headers: HEADERS,
+    },
+    postData
+  );
+};
+
+module.exports.registerSession = (sessionGUID, learnerGUID) =>
+  request({
+    hostname: process.env.CROSSKNOWLEDGE_HOST,
+    path: `/API/ADMIN/v1/REST/Session/${sessionGUID}/Register/${learnerGUID}/`,
+    method: "POST",
+    headers: HEADERS,
+  });
