@@ -80,6 +80,7 @@ Resources:
   putTwilioMessagesIntoAirtable:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub "putTwilioMessagesIntoAirtable_${Purpose}"
       Description: "Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
       Timeout: 20
@@ -111,6 +112,7 @@ Resources:
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub "createCrossknowledgeLearners_${Purpose}"
       Description: "Créé des comptes apprenants dans crossknowledge."
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       Layers:
