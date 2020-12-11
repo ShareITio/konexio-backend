@@ -36,7 +36,6 @@ module.exports.makeReturn = (body, statusCode) => {
         "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT,DELETE,HEAD,PATCH",
-      "Access-Control-Allow-Credentials": true, // Required for cookies, authorization headers with HTTPS
     },
   };
 };
