@@ -111,7 +111,7 @@ Resources:
     Type: AWS::Serverless::Function
     Condition: IsNotProduction
     Properties:
-      FunctionName: createCrossknowledgeLearners_develop
+      FunctionName: !Sub "createCrossknowledgeLearners_${Purpose}" 
       Description: "Créé des comptes apprenants dans crossknowledge."
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       Layers:
