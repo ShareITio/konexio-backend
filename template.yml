@@ -33,10 +33,6 @@ Parameters:
   AirtableBase:
     Type: String
     NoEcho: true
-  AirtableBaseProduction:
-    Type: String
-    Default: _
-    NoEcho: true
   AirtableApiKey:
     Type: String
     NoEcho: true
@@ -100,7 +96,7 @@ Resources:
             Description: Déclenché toutes les 15 minutes
       Environment:
         Variables:
-          AIRTABLE_BASE: !If [CreateProdResources, !Ref AirtableBaseProduction, !Ref AirtableBase]
+          AIRTABLE_BASE: !Ref AirtableBase
           AIRTABLE_API_KEY: !Ref AirtableApiKey
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
