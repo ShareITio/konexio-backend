@@ -25,9 +25,9 @@ Parameters:
     Type: String
   Purpose:
     Type: String
-    Default: testing
+    Default: develop
     AllowedValues:
-      - testing
+      - develop
       - production
     Description: The purpose of this instance.
   AirtableBase:
@@ -134,7 +134,7 @@ Resources:
   ApiGatewayApi:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: testing # !Ref Purpose
+      StageName: develop # !Ref Purpose
       TracingEnabled: true
       Auth:
         ApiKeyRequired: true
