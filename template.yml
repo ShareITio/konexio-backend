@@ -173,7 +173,7 @@ Resources:
       Cors:
         AllowMethods: "'POST'"
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
-        AllowOrigin: "'airtable.com'"
+        AllowOrigin: "'https://airtable.com'"
         MaxAge: "'600'"
         AllowCredentials: True
 
