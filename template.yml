@@ -58,6 +58,7 @@ Parameters:
   ErrorTopicArn:
     Type: String
     NoEcho: true
+
 Conditions:
   CreateProdResources: !Equals [!Ref Purpose, production]
 
@@ -84,7 +85,7 @@ Resources:
       Description: "Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
       Timeout: 20
-      AutoPublishAlias: production # !If [CreateProdResources, production, !Ref "AWS::NoValue"]
+      AutoPublishAlias: live # !If [CreateProdResources, production, !Ref "AWS::NoValue"]
       DeploymentPreference:
         Type: !If [CreateProdResources, Linear10PercentEvery1Minute, AllAtOnce]
       Layers:
@@ -92,14 +93,14 @@ Resources:
       Events:
         Schedule:
           Type: Schedule
+          Condition: CreateProdResources
           Properties:
             Schedule: rate(15 minutes)
             Name: Schedule15minutes
             Description: Déclenché toutes les 15 minutes
-            Enabled: !If [CreateProdResources, True, False]
       Environment:
         Variables:
-          AIRTABLE_BASE: !If [CreateProdResources, !Ref AirtableBase, !Ref AirtableBaseProduction]
+          AIRTABLE_BASE: !If [CreateProdResources, !Ref AirtableBaseProduction, !Ref AirtableBase]
           AIRTABLE_API_KEY: !Ref AirtableApiKey
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
@@ -112,7 +113,7 @@ Resources:
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "createCrossknowledgeLearners_${Purpose}"
+      FunctionName: createCrossknowledgeLearners
       Description: "Créé des comptes apprenants dans crossknowledge."
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       Layers:
@@ -137,7 +138,7 @@ Resources:
   ApiGatewayApi:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: !Ref Purpose
+      StageName: testing # !Ref Purpose
       TracingEnabled: true
       Auth:
         ApiKeyRequired: true
