@@ -56,7 +56,8 @@ Parameters:
     NoEcho: true
 
 Conditions:
-  CreateProdResources: !Equals [!Ref Purpose, production]
+  IsProduction: !Equals [!Ref Purpose, production]
+  IsNotProduction: !Not [Condition: IsProduction]
 
 # Global information for all the functions
 Globals:
@@ -81,15 +82,15 @@ Resources:
       Description: "Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
       Timeout: 20
-      AutoPublishAlias: live # !If [CreateProdResources, production, !Ref "AWS::NoValue"]
+      AutoPublishAlias: live # !If [IsProduction, production, !Ref "AWS::NoValue"]
       DeploymentPreference:
-        Type: !If [CreateProdResources, Linear10PercentEvery1Minute, AllAtOnce]
+        Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
       Layers:
         - !Ref KonexioBackendDepLayer
       Events:
         Schedule:
           Type: Schedule
-          Condition: CreateProdResources
+          Condition: IsProduction
           Properties:
             Schedule: rate(15 minutes)
             Name: Schedule15minutes
@@ -108,8 +109,9 @@ Resources:
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
+    Condition: IsNotProduction
     Properties:
-      FunctionName: createCrossknowledgeLearners
+      FunctionName: createCrossknowledgeLearners_develop
       Description: "Créé des comptes apprenants dans crossknowledge."
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       Layers:
@@ -133,6 +135,7 @@ Resources:
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
   ApiGatewayApi:
     Type: AWS::Serverless::Api
+    Condition: IsNotProduction
     Properties:
       StageName: develop # !Ref Purpose
       TracingEnabled: true
