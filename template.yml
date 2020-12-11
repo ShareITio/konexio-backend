@@ -99,7 +99,7 @@ Resources:
             Enabled: !If [CreateProdResources, True, False]
       Environment:
         Variables:
-          AIRTABLE_BASE: !Ref AirtableBase
+          AIRTABLE_BASE: !If [CreateProdResources, !Ref AirtableBase, !Ref AirtableBaseProduction]
           AIRTABLE_API_KEY: !Ref AirtableApiKey
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
