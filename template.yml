@@ -60,7 +60,16 @@ Parameters:
     NoEcho: true
 Conditions:
   CreateProdResources: !Equals [!Ref Purpose, production]
-  # NotCreateProdResources: !Not [Condition: CreateProdResources]
+
+# Global information for all the functions
+Globals:
+  Function:
+    Runtime: nodejs12.x
+    MemorySize: 128
+    Timeout: 3
+    Tracing: Active
+    CodeUri: ./src
+
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
@@ -72,11 +81,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Description: "Récupère toutes les 15 minutes les derniers SMS reçus et les envoies à Airtable."
-      Runtime: nodejs12.x
-      MemorySize: 128
-      Timeout: 20
-      CodeUri: src/
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
+      Timeout: 20
       AutoPublishAlias: production # !If [CreateProdResources, production, !Ref "AWS::NoValue"]
       DeploymentPreference:
         Type: !If [CreateProdResources, Linear10PercentEvery1Minute, AllAtOnce]
@@ -89,7 +95,7 @@ Resources:
             Schedule: rate(15 minutes)
             Name: Schedule15minutes
             Description: Déclenché toutes les 15 minutes
-            Enabled: !If [CreateProdResources, true, false]
+            Enabled: !If [CreateProdResources, True, False]
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
@@ -106,10 +112,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Description: "Créé des comptes apprenants dans crossknowledge."
-      Runtime: nodejs12.x
-      MemorySize: 128
-      Timeout: 3
-      CodeUri: src/
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       Layers:
         - !Ref KonexioBackendDepLayer
