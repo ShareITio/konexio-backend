@@ -66,7 +66,7 @@ Globals:
     MemorySize: 128
     Timeout: 3
     Tracing: Active
-    CodeUri: ./src
+    CodeUri: src/
 
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
@@ -93,7 +93,7 @@ Resources:
           Condition: IsProduction
           Properties:
             Schedule: rate(15 minutes)
-            Name: !Sub "Schedule15minutes${Purpose}"
+            Name: !Sub "Schedule15minutes_${Purpose}"
             Description: Déclenché toutes les 15 minutes
       Environment:
         Variables:
@@ -111,7 +111,7 @@ Resources:
     Type: AWS::Serverless::Function
     Condition: IsNotProduction
     Properties:
-      FunctionName: !Sub "createCrossknowledgeLearners_${Purpose}" 
+      FunctionName: !Sub "createCrossknowledgeLearners_${Purpose}"
       Description: "Créé des comptes apprenants dans crossknowledge."
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       Layers:
@@ -144,7 +144,7 @@ Resources:
       Cors:
         AllowMethods: "'OPTIONS,POST,GET,PUT,DELETE,HEAD,PATCH'"
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token''"
-        AllowOrigin: "'*''"
+        AllowOrigin: "'*'"
         AllowCredentials: True
 
   KonexioBackendDepLayer:
