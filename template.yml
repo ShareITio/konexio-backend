@@ -143,9 +143,8 @@ Resources:
         ApiKeyRequired: true
       Cors:
         AllowMethods: "'OPTIONS,POST,GET,PUT,DELETE,HEAD,PATCH'"
-        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token''"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
-        AllowCredentials: True
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
