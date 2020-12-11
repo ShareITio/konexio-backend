@@ -93,7 +93,7 @@ Resources:
           Condition: IsProduction
           Properties:
             Schedule: rate(15 minutes)
-            Name: Schedule15minutes
+            Name: "Schedule15minutes_${Purpose}"
             Description: Déclenché toutes les 15 minutes
       Environment:
         Variables:
@@ -137,7 +137,7 @@ Resources:
     Type: AWS::Serverless::Api
     Condition: IsNotProduction
     Properties:
-      StageName: develop # !Ref Purpose
+      StageName: !Ref Purpose
       TracingEnabled: true
       Auth:
         ApiKeyRequired: true
