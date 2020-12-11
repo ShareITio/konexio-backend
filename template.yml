@@ -93,7 +93,7 @@ Resources:
           Condition: IsProduction
           Properties:
             Schedule: rate(15 minutes)
-            Name: "Schedule15minutes_${Purpose}"
+            Name: !Sub "Schedule15minutes_${Purpose}"
             Description: Déclenché toutes les 15 minutes
       Environment:
         Variables:
