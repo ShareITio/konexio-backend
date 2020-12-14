@@ -126,15 +126,6 @@ Resources:
             Method: POST
             Path: /crossknowledge/learners
             RestApiId: !Ref ApiGatewayApi
-        # specify cors with no apikey
-        Options:
-          Type: Api
-          Properties:
-            Path: /crossknowledge/learners
-            Method: OPTIONS
-            Auth:
-              ApiKeyRequired: false
-            RestApiId: !Ref ApiGatewayApi
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
@@ -163,15 +154,6 @@ Resources:
           Properties:
             Method: POST
             Path: /crossknowledge/sessions
-            RestApiId: !Ref ApiGatewayApi
-        # specify cors with no apikey
-        Options:
-          Type: Api
-          Properties:
-            Path: /crossknowledge/sessions
-            Method: OPTIONS
-            Auth:
-              ApiKeyRequired: false
             RestApiId: !Ref ApiGatewayApi
       Environment:
         Variables:
