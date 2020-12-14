@@ -83,7 +83,7 @@ Resources:
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
       Timeout: 20
       CodeUri: src/
-      AutoPublishAlias: live # !If [IsProduction, production, !Ref "AWS::NoValue"]
+      AutoPublishAlias: live
       DeploymentPreference:
         Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
       Layers:
@@ -110,6 +110,7 @@ Resources:
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
+    Condition: IsNotProduction
     Properties:
       FunctionName: !Sub "createCrossknowledgeLearners_${Purpose}"
       Description: "Créé des comptes apprenants dans crossknowledge."
@@ -138,6 +139,7 @@ Resources:
   # This is a Lambda function config associated with the source code: create-crossknowledge-sessions.js
   createCrossknowledgeSessions:
     Type: AWS::Serverless::Function
+    Condition: IsNotProduction
     Properties:
       FunctionName: !Sub "createCrossknowledgeSessions_${Purpose}"
       Description: "Créé des sessions dans crossknowledge et les lie à des apprenants."
@@ -171,11 +173,9 @@ Resources:
       Auth:
         ApiKeyRequired: true
       Cors:
-        AllowMethods: "'POST'"
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
-        AllowOrigin: "'https://airtable.com'"
-        MaxAge: "'600'"
-        AllowCredentials: True
+        AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+        AllowOrigin: "'*'"
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
