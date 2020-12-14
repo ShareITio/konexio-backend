@@ -126,8 +126,8 @@ Resources:
             RestApiId: !Ref ApiGatewayApi
             Method: POST
             Path: /crossknowledge/learners
-            Auth:
-              ApiKeyRequired: true
+            # Auth:
+            #   ApiKeyRequired: true
         # specify cors with no apikey
         # Options:
         #   Type: Api
@@ -166,8 +166,8 @@ Resources:
             Method: POST
             Path: /crossknowledge/sessions
             RestApiId: !Ref ApiGatewayApi
-            Auth:
-              ApiKeyRequired: true
+            # Auth:
+            #   ApiKeyRequired: true
         # specify cors with no apikey
         # Options:
         #   Type: Api
