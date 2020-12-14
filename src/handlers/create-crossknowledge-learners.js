@@ -2,6 +2,7 @@ const {
   STATUS_ERROR,
   STATUS_SUCCESS,
   makeReturn,
+  makeCORSReturn,
   getInfo,
 } = require("../tools");
 const { notifyError } = require("../awsServices");
@@ -10,7 +11,7 @@ const { createLearner } = require("../crossknowledge");
 // Créé des comptes apprenants dans crossknowledge
 exports.createCrossknowledgeLearners = async (event, context) => {
   if (event.httpMethod == "OPTIONS") {
-    return makeReturn({ statusText: "OK" }, STATUS_SUCCESS);
+    return makeCORSReturn();
   }
 
   try {
@@ -36,13 +37,6 @@ exports.createCrossknowledgeLearners = async (event, context) => {
           status: "Y",
           language: "fr-FR",
           entityGuid: "101B1F43-2D44-0AAC-CDA6-F4B8ED66F385", // Konexio entity
-          // customFields: {
-          //   "f114870d-ed13-4e03-bc77-c34841a7a52b": "France",
-          //   "d941cf5f-00a8-4e8d-804e-f913e6aad471": "IT",
-          // },
-          //   group,
-          //   password,
-          // },
         });
       })
     );
