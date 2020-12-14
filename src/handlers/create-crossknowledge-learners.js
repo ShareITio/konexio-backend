@@ -9,6 +9,10 @@ const { createLearner } = require("../crossknowledge");
 
 // Créé des comptes apprenants dans crossknowledge
 exports.createCrossknowledgeLearners = async (event, context) => {
+  if (event.httpMethod == "OPTIONS") {
+    return makeReturn({ statusText: "OK" }, STATUS_SUCCESS);
+  }
+
   try {
     const {
       body: { data },
