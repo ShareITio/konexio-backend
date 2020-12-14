@@ -32,7 +32,6 @@ Parameters:
     Description: The purpose of this instance.
   AirtableBase:
     Type: String
-    NoEcho: true
   AirtableApiKey:
     Type: String
     NoEcho: true
@@ -44,16 +43,14 @@ Parameters:
     NoEcho: true
   TwilioPhone:
     Type: String
-    NoEcho: true
   CrossknowledgeHost:
     Type: String
-    NoEcho: true
   CrossknowledgeApiKey:
     Type: String
     NoEcho: true
   ErrorTopicArn:
     Type: String
-    NoEcho: true
+    default: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:LambdaError"
 
 Conditions:
   IsProduction: !Equals [!Ref Purpose, production]
@@ -119,6 +116,12 @@ Resources:
       CodeUri: src/
       Layers:
         - !Ref KonexioBackendDepLayer
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+            - sns:Publish
+            Resource: '*'
       Events:
         ApiEvent:
           Type: Api
@@ -128,15 +131,6 @@ Resources:
             Path: /crossknowledge/learners
             Auth:
               ApiKeyRequired: true
-        # specify cors with no apikey
-        # Options:
-        #   Type: Api
-        #   Properties:
-        #     Path: /crossknowledge/learners
-        #     Method: OPTIONS
-        #     Auth:
-        #       ApiKeyRequired: false
-        #     RestApiId: !Ref ApiGatewayApi
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
@@ -159,6 +153,12 @@ Resources:
       CodeUri: src/
       Layers:
         - !Ref KonexioBackendDepLayer
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+            - sns:Publish
+            Resource: '*'
       Events:
         ApiEvent:
           Type: Api
@@ -168,13 +168,6 @@ Resources:
             RestApiId: !Ref ApiGatewayApi
             Auth:
               ApiKeyRequired: true
-        # specify cors with no apikey
-        # Options:
-        #   Type: Api
-        #   Properties:
-        #     Path: /crossknowledge/sessions
-        #     Method: OPTIONS
-        #     RestApiId: !Ref ApiGatewayApi
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
