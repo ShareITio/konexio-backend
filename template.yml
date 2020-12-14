@@ -198,10 +198,7 @@ Resources:
       #   UsagePlan:
       #     CreateUsagePlan: PER_API
       #     Description: Usage plan for this API
-      Cors:
-        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
-        AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
-        AllowOrigin: "'*'"
+      Cors: "'*'"
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
