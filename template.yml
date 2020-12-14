@@ -192,16 +192,16 @@ Resources:
     Properties:
       StageName: !Ref Purpose
       TracingEnabled: true
-      Auth:
-        # ApiKeyRequired: true
-        # AddDefaultAuthorizerToCorsPreflight: false
-        UsagePlan:
-          CreateUsagePlan: PER_API
-          Description: Usage plan for this API
+      # Auth:
+      #   ApiKeyRequired: true
+      #   AddDefaultAuthorizerToCorsPreflight: false
+      #   UsagePlan:
+      #     CreateUsagePlan: PER_API
+      #     Description: Usage plan for this API
       Cors:
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
-        AllowOrigin: "'https://airtable.com/'"
+        AllowOrigin: "'*'"
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
