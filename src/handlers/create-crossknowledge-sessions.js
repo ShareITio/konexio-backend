@@ -2,7 +2,6 @@ const {
   STATUS_ERROR,
   STATUS_SUCCESS,
   makeReturn,
-  makeCORSReturn,
   getInfo,
 } = require("../tools");
 const { notifyError } = require("../awsServices");
@@ -10,10 +9,6 @@ const { createSession, registerSession } = require("../crossknowledge");
 
 // Créé des session avec utilisateurs enregistrés dans crossknowledge
 exports.createCrossknowledgeSessions = async (event, context) => {
-  // if (event.httpMethod == "OPTIONS") {
-  //   return makeCORSReturn();
-  // }
-
   try {
     const {
       body: { data },
