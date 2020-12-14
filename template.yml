@@ -173,11 +173,12 @@ Resources:
       StageName: !Ref Purpose
       TracingEnabled: true
       Auth:
+        AddDefaultAuthorizerToCorsPreflight: false
         ApiKeyRequired: true
       Cors:
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
-        AllowOrigin: "'*'"
+        AllowOrigin: "'https://airtable.com/'"
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
