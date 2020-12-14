@@ -20,7 +20,7 @@ module.exports.notifyError = (error, event, context, ...extra) => {
       `Date et heure de l'erreur : "${datestring}"\n\n` +
       `Message de l'erreur : "${error}"\n\n` +
       `Lien du log de la fonction : https://${context.region}.console.aws.amazon.com/lambda/home?region=${context.region}#/functions/${context.functionName}?tab=monitor\n\n` +
-      `Lien de désactivation de la Lambda: https://eu-west-3.console.aws.amazon.com/lambda/home?region=eu-west-3#/functions/putTwilioMessagesIntoAirtable_production/aliases/live?tab=configure\n\n` +
+      `Lien de désactivation de la Lambda: https://${context.region}.console.aws.amazon.com/lambda/home?region=${context.region}#/functions/${context.functionName}/aliases/live?tab=configure\n\n` +
       `Informations complémentaires: ${JSON.stringify(
         {
           event,
