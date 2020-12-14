@@ -25,30 +25,20 @@ module.exports.STATUS_ERROR = "400";
 
 module.exports.STATUS_SUCCESS = "200";
 
-module.exports.makeReturn = (body, statusCode, headers = {}) => {
+module.exports.makeReturn = (body, statusCode) => {
   console.log("Return : ", statusCode, JSON.stringify(body, null, 2));
   return {
     statusCode,
     body: JSON.stringify(body),
     headers: {
       "Content-Type": "application/json",
-      ...headers,
-    },
-  };
-};
-
-module.exports.makeCORSReturn = () => {
-  return module.exports.makeReturn(
-    { statusCode: module.exports.STATUS_SUCCESS },
-    module.exports.STATUS_SUCCESS,
-    {
       "Access-Control-Allow-Headers":
         "Content-Type,X-Amz-Date,X-Amz-Security-Token,x-api-key,Authorization,Origin,Host,X-Requested-With,Accept,Access-Control-Allow-Methods,Access-Control-Allow-Origin,Access-Control-Allow-Headers",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
       "X-Requested-With": "*",
-    }
-  );
+    },
+  };
 };
 
 module.exports.getInfo = (event) => {
