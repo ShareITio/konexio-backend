@@ -123,18 +123,20 @@ Resources:
         ApiEvent:
           Type: Api
           Properties:
+            RestApiId: !Ref ApiGatewayApi
             Method: POST
             Path: /crossknowledge/learners
-            RestApiId: !Ref ApiGatewayApi
-        # specify cors with no apikey
-        Options:
-          Type: Api
-          Properties:
-            Path: /crossknowledge/learners
-            Method: OPTIONS
             Auth:
-              ApiKeyRequired: false
-            RestApiId: !Ref ApiGatewayApi
+              ApiKeyRequired: true
+        # specify cors with no apikey
+        # Options:
+        #   Type: Api
+        #   Properties:
+        #     Path: /crossknowledge/learners
+        #     Method: OPTIONS
+        #     Auth:
+        #       ApiKeyRequired: false
+        #     RestApiId: !Ref ApiGatewayApi
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
@@ -164,15 +166,15 @@ Resources:
             Method: POST
             Path: /crossknowledge/sessions
             RestApiId: !Ref ApiGatewayApi
-        # specify cors with no apikey
-        Options:
-          Type: Api
-          Properties:
-            Path: /crossknowledge/sessions
-            Method: OPTIONS
             Auth:
-              ApiKeyRequired: false
-            RestApiId: !Ref ApiGatewayApi
+              ApiKeyRequired: true
+        # specify cors with no apikey
+        # Options:
+        #   Type: Api
+        #   Properties:
+        #     Path: /crossknowledge/sessions
+        #     Method: OPTIONS
+        #     RestApiId: !Ref ApiGatewayApi
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
@@ -191,8 +193,8 @@ Resources:
       StageName: !Ref Purpose
       TracingEnabled: true
       Auth:
-        ApiKeyRequired: true
-        AddDefaultAuthorizerToCorsPreflight: false
+        # ApiKeyRequired: true
+        # AddDefaultAuthorizerToCorsPreflight: false
         UsagePlan:
           CreateUsagePlan: PER_API
           Description: Usage plan for this API
