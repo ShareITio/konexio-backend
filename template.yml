@@ -50,7 +50,7 @@ Parameters:
     NoEcho: true
   ErrorTopicArn:
     Type: String
-    default: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:LambdaError"
+    Default: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:LambdaError"
 
 Conditions:
   IsProduction: !Equals [!Ref Purpose, production]
