@@ -131,6 +131,7 @@ Resources:
       Events:
         ApiEvent:
           Type: Api
+          Condition: IsNotProduction
           Properties:
             RestApiId: !Ref ApiGatewayApi
             Method: POST
@@ -169,6 +170,7 @@ Resources:
       Events:
         ApiEvent:
           Type: Api
+          Condition: IsNotProduction
           Properties:
             Method: POST
             Path: /crossknowledge/sessions
@@ -186,28 +188,9 @@ Resources:
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
-  testlambda:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub "testlambda_${Purpose}"
-      Description: "Un test de production en APIGATEWAY."
-      Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
-      CodeUri: src/
-      Layers:
-        - !Ref KonexioBackendDepLayer
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ApiGatewayApi
-            Method: GET
-            Path: /test/prod
-            Auth:
-              ApiKeyRequired: true
-
   ApiGatewayApi:
     Type: AWS::Serverless::Api
-    # Condition: IsNotProduction
+    Condition: IsNotProduction
     Properties:
       StageName: !Ref Purpose
       TracingEnabled: true
