@@ -189,7 +189,7 @@ Resources:
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "createCrossknowledgeLearners_${Purpose}"
+      FunctionName: !Sub "testlambda_${Purpose}"
       Description: "Un test de production en APIGATEWAY."
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       CodeUri: src/
