@@ -181,7 +181,7 @@ Resources:
 
   ApiGatewayApi:
     Type: AWS::Serverless::Api
-    Condition: IsNotProduction
+    # Condition: IsNotProduction
     Properties:
       StageName: !Ref Purpose
       TracingEnabled: true
