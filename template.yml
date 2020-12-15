@@ -131,11 +131,10 @@ Resources:
       Events:
         ApiEvent:
           Type: Api
-          Condition: IsNotProduction
           Properties:
-            RestApiId: !Ref ApiGatewayApi
             Method: POST
             Path: /crossknowledge/learners
+            RestApiId: !Ref ApiGateway
             Auth:
               ApiKeyRequired: true
       Environment:
@@ -170,11 +169,10 @@ Resources:
       Events:
         ApiEvent:
           Type: Api
-          Condition: IsNotProduction
           Properties:
             Method: POST
             Path: /crossknowledge/sessions
-            RestApiId: !Ref ApiGatewayApi
+            RestApiId: !Ref ApiGateway
             Auth:
               ApiKeyRequired: true
       Environment:
@@ -188,9 +186,8 @@ Resources:
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
-  ApiGatewayApi:
+  ApiGateway:
     Type: AWS::Serverless::Api
-    Condition: IsNotProduction
     Properties:
       StageName: !Ref Purpose
       TracingEnabled: true
