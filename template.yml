@@ -131,7 +131,6 @@ Resources:
       Events:
         ApiEvent:
           Type: Api
-          Condition: IsNotProduction
           Properties:
             RestApiId: !Ref ApiGatewayApi
             Method: POST
@@ -170,7 +169,6 @@ Resources:
       Events:
         ApiEvent:
           Type: Api
-          Condition: IsNotProduction
           Properties:
             Method: POST
             Path: /crossknowledge/sessions
