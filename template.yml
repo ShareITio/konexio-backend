@@ -190,6 +190,7 @@ Resources:
     Type: AWS::Serverless::Api
     Condition: IsNotProduction
     Properties:
+      StageName: !Ref Purpose
       TracingEnabled: true
       Auth:
         UsagePlan:
