@@ -186,7 +186,7 @@ Resources:
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
 
-  createCrossknowledgeLearners:
+  testlambda:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "testlambda_${Purpose}"
