@@ -85,6 +85,12 @@ Resources:
         Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
       Layers:
         - !Ref KonexioBackendDepLayer
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+            - sns:Publish
+            Resource: '*'
       Events:
         Schedule:
           Type: Schedule
