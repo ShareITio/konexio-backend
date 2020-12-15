@@ -7,10 +7,9 @@ const schemaMessage = {
   status: "Statut du message",
   candidates: "Candidatures apprenants liées au numéro",
   dateReceived: "Date et heure de réception",
-  dateSent: "Date et heure d'envoi",
 };
 module.exports.createMessage = makeCreate(
-  "Messages",
+  "💌Messages",
   makeSchema(schemaMessage, (name) =>
     schemaMessage.dateSent === name || schemaMessage.dateReceived === name
       ? (data) => data.toISOString()
@@ -23,7 +22,7 @@ const schemaCandidate = {
   messageReceived: "Messages reçus",
 };
 module.exports.fetchCandidates = makeFetcher(
-  "Candidatures DigitAll et DigiStart",
+  "🙋‍♂️Candidatures DigitAll et DigiStart",
   "Master view",
   makeSchema(schemaCandidate, (name) => (data) => data.get(name))
 );

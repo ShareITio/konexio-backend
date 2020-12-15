@@ -42,7 +42,7 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
           status: "À traiter",
           to: process.env.TWILIO_PHONE,
           candidates: relatedCandidates,
-          dateSent,
+          dateReceived: dateSent,
         });
       })
     );
