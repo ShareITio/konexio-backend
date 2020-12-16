@@ -1,5 +1,6 @@
 // Envoyer les sessions Airtable vers Crossknowledge
 async () => {
+  // Envoyer les sessions Airtable vers Crossknowledge
   try {
     output.text("Création des sessions...");
 
@@ -17,7 +18,7 @@ async () => {
     output.table(query.records);
 
     // préparation des données à envoyer vers la LAMBDA
-    const sessionFormated = query.records.map((sessionRecord) => {
+    const data = query.records.map((sessionRecord) => {
       let learners = [];
       const cellLearners = sessionRecord.getCellValue("Apprenants");
       if (cellLearners) {
@@ -67,44 +68,49 @@ async () => {
       return data;
     });
     output.text("Sessions formatées :");
-    output.inspect(sessionFormated);
-
-    const response = await fetch(
-      `${process.env.LAMBDA_API_URL}/crossknowledge/learners`,
-      {
+    output.inspect(data);
+    // Appel sequentiel pour eviter que CK ne bloque nos trop nombreuses requetes
+    for (const i in data) {
+      const session = data[i];
+      output.markdown(`Envoie de la session : ${session.title}`);
+      const response = await fetch(process.env.LAMBDA_API_URL, {
         method: "POST",
-        body: JSON.stringify({ data: sessionFormated }),
+        body: JSON.stringify({ data: [session] }),
         headers: {
           "Content-Type": "application/json",
           "x-api-key": process.env.LAMBDA_API_KEY,
         },
+      });
+
+      const responseData = await response.json();
+      if (responseData.ok) {
+        // Si la lambda a créé les session
+        output.text("Les sessions ont bien été enregistrés !");
+        console.log(`Réponse de AWS LAMDA`, responseData);
+        output.text("Passage des sessions de à créer vers créées...");
+
+        await table.updateRecordsAsync(
+          query.records.map((record, i) => ({
+            id: record.id,
+            fields: {
+              "Session CK créer": true,
+              GUID: responseData.data.guid[i],
+            },
+          }))
+        );
+
+        output.text(`La session à bien été créée.\nFélicitation !`);
+      } else {
+        // Si une erreur s'est produite durant la création de sessions
+        throw responseData; // renvoi de l'erreur vers le catch
       }
-    );
-
-    if (response.ok) {
-      // Si la lambda a créé les session
-      output.text("Les sessions ont bien été enregistrés !");
-      console.log(`Réponse de AWS LAMDA`, await response.json());
-
-      output.text("Passage des sessions de à créer vers créées...");
-
-      // TODO verifier que les records passent bien en dans l'autre vue
-      for (let record of query.records) {
-        await table.updateRecordAsync(record, {
-          // Change these names to fields in your base
-          "Session CK créer": true,
-        });
-      }
-
-      output.text(
-        `L'execution de la création de ${query.records.length} nouvelles sessions s'est bien déroulée.\nFélicitation !`
-      );
-    } else {
-      // Si une erreur s'est produite durant la création de sessions
-      throw await response.json(); // renvoi de l'erreur vers le catch
     }
   } catch (err) {
-    output.text("Une erreur s'est produite lors de l'enregistrement.");
+    output.markdown("---");
+    output.markdown("❌ Une erreur s'est produite lors de l'enregistrement.");
+    output.markdown(
+      "Veuillez contacter votre administrateur Konexio (📧 [airtable@konexio.eu](mailto:airtable@konexio.eu))."
+    );
     throw err; // affichage de l'erreur
   }
 };

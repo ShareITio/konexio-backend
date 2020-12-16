@@ -12,6 +12,9 @@ const {
   getLearner,
 } = require("../crossknowledge");
 
+/**
+ * Probleme avec CK lorsque trop de requete, il ne repond plus et renvoie un data undefined
+ */
 const makeTrainingError = ({ title, detail }) => ({
   code: 1,
   message: `Le programme "${title}" n'a pas été retrouvé dans crossknowledge.`,
