@@ -8,15 +8,16 @@ const MINUTES = 15;
 exports.putTwilioMessagesIntoAirtable = async (event, context) => {
   let detailOnError;
   try {
-    console.log(event);
+    const dateSentAfter = new Date(Date.now() - 1000 * (60 * MINUTES));
+    console.log(event, context);
     // throw new Error("Attention le chargement des message n'a pas pu se produire.");
-
+    console.log("récupération des messages à partir de :", dateSentAfter);
     const [candidates, messages] = await Promise.all([
       // On récupere tous les candidats
       fetchCandidates(),
       // On récupère les sms de ces 15 derniere minutes
       list({
-        dateSentAfter: new Date(Date.now() - 1000 * (60 * MINUTES)),
+        dateSentAfter,
       }),
     ]);
 
