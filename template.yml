@@ -99,7 +99,7 @@ Resources:
             Schedule: rate(15 minutes)
             Name: !Sub "Schedule15minutes_${Purpose}"
             Description: Déclenché toutes les 15 minutes
-            Enabled: True
+            Enabled: !Ref IsProduction
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
