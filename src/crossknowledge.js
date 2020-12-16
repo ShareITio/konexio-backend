@@ -70,10 +70,13 @@ module.exports.createLearner = (
     entityGuid,
     language,
     referenceNumber,
-    customFields: customFields || [],
     status,
     start,
     end,
+    ...Object.keys(customFields).reduce((acc, guid) => {
+      acc[`customFields[${guid}]`] = customFields[guid];
+      return acc;
+    }, {}),
   });
   console.log("postData", postData);
   return request(

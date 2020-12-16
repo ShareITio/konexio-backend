@@ -32,11 +32,9 @@ exports.createCrossknowledgeLearners = async (event, context) => {
           status: "Y",
           language: "fr-FR",
           entityGuid: "101B1F43-2D44-0AAC-CDA6-F4B8ED66F385", // Konexio entity
-          customFields: [
-            {
-              "5BD8779F-BD3A-6F83-A44B-3CF77D67B2C2": group,
-            },
-          ],
+          customFields: {
+            "5BD8779F-BD3A-6F83-A44B-3CF77D67B2C2": group,
+          },
         });
       })
     );
