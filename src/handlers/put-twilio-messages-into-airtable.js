@@ -6,12 +6,14 @@ const MINUTES = 15;
 
 // Fonction permettant de récupérer les sms recu de ces 15 derniere minutes sur Twilio et de les envoyer sur airtable
 exports.putTwilioMessagesIntoAirtable = async (event, context) => {
+  console.log(event, context);
   let detailOnError;
   try {
-    const dateSentAfter = new Date(Date.now() - 1000 * (60 * MINUTES));
-    console.log(event, context);
+    const dateSentAfter = new Date(
+      new Date(event.time) - 1000 * (60 * MINUTES)
+    );
     // throw new Error("Attention le chargement des message n'a pas pu se produire.");
-    console.log("récupération des messages à partir de :", dateSentAfter);
+    console.log("DateSentAfter :", dateSentAfter);
     const [candidates, messages] = await Promise.all([
       // On récupere tous les candidats
       fetchCandidates(),
