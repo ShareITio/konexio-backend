@@ -5,11 +5,9 @@ async () => {
     items: [
       input.config.table("learnersTable", {
         label: "La table des apprennants",
-        // description: 'The table in which you track orders for your store'
       }),
       input.config.view("learnersView", {
         label: "Vue des apprenant à créer",
-        // description: 'La vue des apprenant à créer',
         parentTable: "learnersTable",
       }),
       input.config.text("APIurl", {
@@ -23,6 +21,12 @@ async () => {
 
   try {
     output.markdown("### Création des comptes apprenants Crossknowledge");
+    output.markdown(
+      "**Attention, un apprennant ne peut etre affilier qu'à un seul groupe.**"
+    );
+    output.markdown(
+      "**Si plusieurs ont été affiliés celui pris en considération sera le dernier.**"
+    );
 
     let query = await config.learnersView.selectRecordsAsync();
 
@@ -31,7 +35,11 @@ async () => {
       lastName: record.getCellValue("Nom"),
       firstName: record.getCellValue("Prénom"),
       email: record.getCellValue("Email"),
-      group: record.getCellValue("Groupe"),
+      group: record.getCellValue("Groupe")
+        ? record
+            .getCellValue("Groupe")
+            .reduce((acc, cur) => cur.name, undefined)
+        : [],
     }));
 
     output.markdown("Liste des apprenants à créer :");
