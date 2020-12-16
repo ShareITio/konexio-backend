@@ -100,16 +100,18 @@ exports.createCrossknowledgeSessions = async (event, context) => {
     await Promise.all(
       Object.values(
         formatedSessions.reduce((acc, cur) => {
-          acc[cur.learnersGUID] = cur.learnersGUID;
+          cur.learnersGUID.forEach((guid) => {
+            acc[guid] = guid;
+          });
           return acc;
         }, {})
         // TODO avoir chacun des guid apprennant de toutes les sessions (en une seule fois)
-      ).map(async (EachLearnersGUID) => {
-        EachLearnersGUID.map(guid => {
+      ).map((learnersGUID) => {
+        return learnersGUID.map(async (guid) => {
           console.log("Check if exist : ", guid);
           const res = await getLearner(guid);
           if (!res.success) throw guid;
-        })
+        });
       })
     ).catch((err) => {
       throw makeReturnError(makeNoLearnerError({ detail: err }));
