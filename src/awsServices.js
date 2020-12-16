@@ -4,7 +4,7 @@ AWS.config.update({ region: "eu-west-3" });
 const SNS = new AWS.SNS();
 
 module.exports.notifyError = (error, event, context, ...extra) => {
-  const date = new Date(event.time);
+  const date = new Date();
 
   const datestring = `${[
     date.getDate(),
@@ -22,11 +22,7 @@ module.exports.notifyError = (error, event, context, ...extra) => {
       `Lien du log de la fonction : https://${context.region}.console.aws.amazon.com/lambda/home?region=${context.region}#/functions/${context.functionName}?tab=monitor\n\n` +
       `Lien de désactivation de la Lambda: https://${context.region}.console.aws.amazon.com/lambda/home?region=${context.region}#/functions/${context.functionName}/aliases/live?tab=configure\n\n` +
       `Informations complémentaires: ${JSON.stringify(
-        {
-          event,
-          context,
-          extra,
-        },
+        { error, event, context, extra },
         null,
         2
       )}\n`,
