@@ -8,7 +8,7 @@ const HEADERS = {
   "Content-Type": "application/x-www-form-urlencoded",
 };
 
-module.exports.getLearner = async (guid) =>
+module.exports.getLearner = (guid) =>
   request({
     hostname: process.env.CROSSKNOWLEDGE_HOST,
     path: `/API/ADMIN/v1/REST/Learner/${guid}`,
