@@ -93,12 +93,14 @@ exports.createCrossknowledgeSessions = async (event, context) => {
         learnersGUID: learnersFormated,
       };
     });
+    console.log("Formatage des données réussie", formatedSessions);
 
     // Verification de la présence des apprenants dans CK
     await Promise.all(
       Object.values(
         formatedSessions.reduce((acc, cur) => {
           acc[cur.learnersGUID] = cur.learnersGUID;
+          return acc;
         }, {})
       ).map(async (guid) => {
         console.log("Check if exist : ", guid);
@@ -108,6 +110,8 @@ exports.createCrossknowledgeSessions = async (event, context) => {
     ).catch((err) => {
       throw makeReturnError(makeNoLearnerError({ detail: err }));
     });
+    console.log("Tous les apprenants existent bien dans crossknowledge");
+    console.log("Envoie des données vers CK");
 
     // Envoie des données vers crossknowledge
     const result = await Promise.all(
@@ -129,7 +133,7 @@ exports.createCrossknowledgeSessions = async (event, context) => {
             trainingGUID,
           });
           if (!sessionResponse.success) {
-            throw sessionResponse;
+            throw makeReturnError(sessionResponse);
           }
           const { guid: sessionGUID } = sessionResponse.value[0];
           await Promise.all(
@@ -140,7 +144,7 @@ exports.createCrossknowledgeSessions = async (event, context) => {
                 learnerGUID
               );
               if (!registerResponse.success) {
-                throw sessionResponse;
+                throw makeReturnError(registerResponse);
               }
             })
           );
@@ -149,17 +153,14 @@ exports.createCrossknowledgeSessions = async (event, context) => {
       )
     );
 
-    if (result.every(({ success }) => success)) {
-      console.log(result);
-      return makeReturnSuccess(
-        {
-          message: `Added ${result.length}`,
-          guid: result.map(({ value }) => value[0].guid),
-        },
-        STATUS_SUCCESS
-      );
-    }
-    throw result;
+    console.log(result);
+    return makeReturn(
+      makeReturnSuccess({
+        message: `Added ${result.length}`,
+        guid: result.map(({ value }) => value[0].guid),
+      }),
+      STATUS_SUCCESS
+    );
   } catch (reason) {
     console.error(reason);
     await notifyError(reason, event, context);

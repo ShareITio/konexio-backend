@@ -17,7 +17,7 @@ async () => {
     output.table(query.records);
 
     // préparation des données à envoyer vers la LAMBDA
-    const data = query.records.map((sessionRecord) => {
+    const sessionFormated = query.records.map((sessionRecord) => {
       let learners = [];
       const cellLearners = sessionRecord.getCellValue("Apprenants");
       if (cellLearners) {
@@ -67,13 +67,13 @@ async () => {
       return data;
     });
     output.text("Sessions formatées :");
-    output.inspect(data);
+    output.inspect(sessionFormated);
 
     const response = await fetch(
       `${process.env.LAMBDA_API_URL}/crossknowledge/learners`,
       {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify({ data: sessionFormated }),
         headers: {
           "Content-Type": "application/json",
           "x-api-key": process.env.LAMBDA_API_KEY,
