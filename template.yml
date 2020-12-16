@@ -110,6 +110,7 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
+          PURPOSE: !Ref Purpose
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
@@ -147,6 +148,7 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
+          PURPOSE: !Ref Purpose
 
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-sessions.js
@@ -185,6 +187,7 @@ Resources:
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
+          PURPOSE: !Ref Purpose
 
   testprod:
     Type: AWS::Serverless::Function
@@ -194,8 +197,6 @@ Resources:
       Description: "Accompagne l'apigateway pour la production."
       Handler: handlers/create-crossknowledge-sessions.createCrossknowledgeSessions
       CodeUri: src/
-      Layers:
-        - !Ref KonexioBackendDepLayer
       Events:
         ApiEvent:
           Type: Api

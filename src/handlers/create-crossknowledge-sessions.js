@@ -56,7 +56,8 @@ exports.createCrossknowledgeSessions = async (event, context) => {
     console.log(data);
 
     // Lien avec les GUID Training et verification des données
-    const tranings = await getTrainings();
+    const trainings = await getTrainings();
+    console.log(trainings);
     const formatedSessions = data.map((session, i) => {
       console.log("Vérify session", i);
       if (!session.title) {
@@ -65,7 +66,7 @@ exports.createCrossknowledgeSessions = async (event, context) => {
       if (!session.start) {
         throw makeReturnError(makeStartError({ i, detail: session }));
       }
-      const training = tranings.find(({ title }) => session.program === title);
+      const training = trainings.find(({ title }) => session.program === title);
       if (!training) {
         throw makeReturnError(
           makeTrainingError({ title: session.program, detail: session })
@@ -102,10 +103,13 @@ exports.createCrossknowledgeSessions = async (event, context) => {
           acc[cur.learnersGUID] = cur.learnersGUID;
           return acc;
         }, {})
-      ).map(async (guid) => {
-        console.log("Check if exist : ", guid);
-        const res = await getLearner(guid);
-        if (!res.success) throw guid;
+        // TODO avoir chacun des guid apprennant de toutes les sessions (en une seule fois)
+      ).map(async (EachLearnersGUID) => {
+        EachLearnersGUID.map(guid => {
+          console.log("Check if exist : ", guid);
+          const res = await getLearner(guid);
+          if (!res.success) throw guid;
+        })
       })
     ).catch((err) => {
       throw makeReturnError(makeNoLearnerError({ detail: err }));
