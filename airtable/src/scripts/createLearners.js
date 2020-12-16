@@ -1,8 +1,30 @@
 async () => {
+  const config = input.config({
+    title: "Configuration",
+    description: "Un scrpit permettant de créer de nouveaux apprenant CK",
+    items: [
+      input.config.table("learnersTable", {
+        label: "La table des apprennants",
+        // description: 'The table in which you track orders for your store'
+      }),
+      input.config.view("learnersView", {
+        label: "Vue des apprenant à créer",
+        // description: 'La vue des apprenant à créer',
+        parentTable: "learnersTable",
+      }),
+      input.config.text("APIurl", {
+        label: "Point de terminaison d’API",
+      }),
+      input.config.text("APIkey", {
+        label: "Clé API",
+      }),
+    ],
+  });
+
   try {
-    let table = base.getTable("Comptes CK");
-    let view = table.getView("Comptes CK à créer");
-    let query = await view.selectRecordsAsync();
+    output.markdown("### Création des comptes apprenants Crossknowledge");
+
+    let query = await config.learnersView.selectRecordsAsync();
 
     const learners = query.records.map((record) => ({
       id: record.getCellValue("Identifiant"),
@@ -10,46 +32,51 @@ async () => {
       firstName: record.getCellValue("Prénom"),
       email: record.getCellValue("Email"),
       group: record.getCellValue("Groupe"),
-      password: record.getCellValue("Mot de passe"),
     }));
 
-    output.text("Enregistrement des apprenants en cours...");
+    output.markdown("Liste des apprenants à créer :");
     output.table(learners);
+    output.markdown("Envoi de la liste vers Crossknowledge via Lambda...");
 
-    const response = await fetch(
-      "https://uuzuwr0ba0.execute-api.eu-west-3.amazonaws.com/default/konexio",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          data: learners,
-          endpoint: "LEARNERS",
-        }),
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": "n8J7PbPspS80OzQPZRveN7FbMwyap46lFBwkX3Si",
-        },
-      }
-    );
+    const response = await fetch(config.APIurl, {
+      method: "POST",
+      body: JSON.stringify({
+        data: learners,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        "X-Api-Key": config.APIkey,
+      },
+    });
 
-    const { message, data } = await response.json();
+    const responseData = await response.json();
+    if (responseData.data) {
+      output.markdown(
+        "✅ Les comptes apprenants ont bien été créés dans Crossknowledge !"
+      );
+      output.markdown("Mise a jour des apprenants dans Airtable...");
 
-    output.text("Les apprenants ont bien été enregistrés !");
-    output.text(`Réponse serveur : ${message}`);
-    output.inspect(data);
-
-    await table.updateRecordsAsync(
-      query.records.map((record, i) => ({
-        id: record.id,
-        fields: {
-          "Compte CK créé": true,
-          GUID: data[i].guid,
-        },
-      }))
-    );
+      await config.learnersTable.updateRecordsAsync(
+        query.records.map((record, i) => ({
+          id: record.id,
+          fields: {
+            "Compte CK créé": true,
+            GUID: responseData.data[i].guid,
+          },
+        }))
+      );
+      output.text(
+        "✅ Identifiants Crossknowledge des apprenants mis à jour dans Airtable."
+      );
+    } else {
+      throw responseData;
+    }
   } catch (err) {
-    console.error(
-      "Une erreur s'est produite lors de l'enregistrement : ",
-      err.message
+    output.markdown("---");
+    output.markdown("❌ Une erreur s'est produite lors de l'enregistrement.");
+    output.markdown(
+      "Veuillez contacter votre administrateur Konexio (📧 [airtable@konexio.eu](mailto:airtable@konexio.eu))."
     );
+    throw err;
   }
 };
