@@ -8,13 +8,36 @@ const HEADERS = {
   "Content-Type": "application/x-www-form-urlencoded",
 };
 
-module.exports.getTrainings = () =>
+module.exports.getLearner = async (guid) =>
   request({
     hostname: process.env.CROSSKNOWLEDGE_HOST,
-    path: "/API/ADMIN/v1/REST/Training/",
+    path: `/API/ADMIN/v1/REST/Learner/${guid}`,
     method: "GET",
     headers: HEADERS,
   });
+
+module.exports.getTrainings = async () => {
+  let path = "/API/ADMIN/v1/REST/Training/?limit=50";
+  let data = [];
+  let response = {};
+
+  do {
+    response = await request({
+      hostname: process.env.CROSSKNOWLEDGE_HOST,
+      path,
+      method: "GET",
+      headers: HEADERS,
+    });
+    if (response.message === "OK") {
+      data = [...data, ...response.value];
+      if (response.totalCount > response.count) {
+        path = response.next;
+      }
+    } else break; // securité en cas d'erreur
+  } while (response.totalCount > response.count);
+
+  return data;
+};
 
 module.exports.getTrainingSession = (guid) =>
   request({
@@ -64,10 +87,13 @@ module.exports.createLearner = (
   );
 };
 
-module.exports.createSession = (
+module.exports.createSession = ({
+  title,
+  start,
+  end,
+  welcomeText,
   trainingGUID,
-  { title, start, end, welcomeText }
-) => {
+}) => {
   const postData = querystring.stringify({ title, start, end, welcomeText });
   console.log("postData", postData);
   return request(

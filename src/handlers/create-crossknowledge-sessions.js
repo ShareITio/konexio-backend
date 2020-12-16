@@ -5,7 +5,47 @@ const {
   getInfo,
 } = require("../tools");
 const { notifyError } = require("../awsServices");
-const { createSession, registerSession } = require("../crossknowledge");
+const {
+  createSession,
+  registerSession,
+  getTrainings,
+  getLearner,
+} = require("../crossknowledge");
+
+const makeTrainingError = ({ title, detail }) => ({
+  code: 1,
+  message: `Le programme "${title}" n'a pas été retrouvé dans crossknowledge.`,
+  detail,
+});
+const makeTitleError = ({ i, detail }) => ({
+  code: 2,
+  message: `La session numéro "${i}" dans l'ordre d'arrivé n'a pas de titre.`,
+  detail,
+});
+const makeStartError = ({ i, detail }) => ({
+  code: 3,
+  message: `La session numéro "${i}" dans l'ordre d'arrivé n'a pas de date de début.`,
+  detail,
+});
+const makeLearnerGUIDError = ({ i, j, detail }) => ({
+  code: 4,
+  message: `Le GUID de l'utilisateur numéro "${j}" de la session numéro "${i}" n'est pas correct.`,
+  detail: detail,
+});
+const makeNoLearnerError = ({ detail }) => ({
+  code: 5,
+  message: `Certains guid d'apprenants n'existent pas.`,
+  detail: detail,
+});
+
+const makeReturnError = (errorObject) => ({
+  ok: false,
+  data: errorObject,
+});
+const makeReturnSuccess = (successObject) => ({
+  ok: true,
+  data: successObject,
+});
 
 // Créé des session avec utilisateurs enregistrés dans crossknowledge
 exports.createCrossknowledgeSessions = async (event, context) => {
@@ -13,33 +53,116 @@ exports.createCrossknowledgeSessions = async (event, context) => {
     const {
       body: { data },
     } = getInfo(event, context);
+    console.log(data);
 
+    // Lien avec les GUID Training et verification des données
+    const tranings = await getTrainings();
+    const formatedSessions = data.map((session, i) => {
+      console.log("Vérify session", i);
+      if (!session.title) {
+        throw makeReturnError(makeTitleError({ i, detail: session }));
+      }
+      if (!session.start) {
+        throw makeReturnError(makeStartError({ i, detail: session }));
+      }
+      const training = tranings.find(({ title }) => session.program === title);
+      if (!training) {
+        throw makeReturnError(
+          makeTrainingError({ title: session.program, detail: session })
+        );
+      }
+      let learnersFormated = [];
+      if (session.learners && session.learners.length > 0) {
+        learnersFormated = session.learners.map((learner, j) => {
+          console.log("Vérify learner", j);
+          if (!learner.guid) {
+            throw makeReturnError(
+              makeLearnerGUIDError({ i, j, detail: learner })
+            );
+          }
+          return learner.guid;
+        });
+      }
+
+      return {
+        title: session.title,
+        start: session.start,
+        end: session.end,
+        welcomeText: session.welcomeText,
+        trainingGUID: training.guid,
+        learnersGUID: learnersFormated,
+      };
+    });
+
+    // Verification de la présence des apprenants dans CK
+    await Promise.all(
+      Object.values(
+        formatedSessions.reduce((acc, cur) => {
+          acc[cur.learnersGUID] = cur.learnersGUID;
+        }, {})
+      ).map(async (guid) => {
+        console.log("Check if exist : ", guid);
+        const res = await getLearner(guid);
+        if (!res.success) throw guid;
+      })
+    ).catch((err) => {
+      throw makeReturnError(makeNoLearnerError({ detail: err }));
+    });
+
+    // Envoie des données vers crossknowledge
     const result = await Promise.all(
-      data.map(async (data, i) => {
-        console.log(i, data);
-        const { trainingGUID, learners, title, start, end, welcomeText } = data;
-        const sessionResponse = await createSession(trainingGUID, {
+      formatedSessions.map(
+        async ({
+          learnersGUID,
           title,
           start,
           end,
           welcomeText,
-        });
-        const { guid: sessionGUID } = sessionResponse.value[0];
-        return Promise.all(
-          learners.map(async ({ guid: learnerGUID }) => {
-            await registerSession(sessionGUID, learnerGUID);
-          })
-        );
-      })
+          trainingGUID,
+        }) => {
+          console.log("Send : ", title);
+          const sessionResponse = await createSession({
+            title,
+            start,
+            end,
+            welcomeText,
+            trainingGUID,
+          });
+          if (!sessionResponse.success) {
+            throw sessionResponse;
+          }
+          const { guid: sessionGUID } = sessionResponse.value[0];
+          await Promise.all(
+            learnersGUID.map(async ({ guid: learnerGUID }) => {
+              console.log("Register : ", learnerGUID);
+              const registerResponse = await registerSession(
+                sessionGUID,
+                learnerGUID
+              );
+              if (!registerResponse.success) {
+                throw sessionResponse;
+              }
+            })
+          );
+          return sessionResponse;
+        }
+      )
     );
-    if (result.every(({ message }) => message === "OK")) {
+
+    if (result.every(({ success }) => success)) {
       console.log(result);
-      return makeReturn(`Added ${result.length}`, STATUS_SUCCESS);
+      return makeReturnSuccess(
+        {
+          message: `Added ${result.length}`,
+          guid: result.map(({ value }) => value[0].guid),
+        },
+        STATUS_SUCCESS
+      );
     }
     throw result;
   } catch (reason) {
     console.error(reason);
     await notifyError(reason, event, context);
-    return makeReturn("An error as occured.", STATUS_ERROR);
+    return makeReturn(reason, STATUS_ERROR);
   }
 };
