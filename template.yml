@@ -158,6 +158,7 @@ Resources:
     Properties:
       FunctionName: !Sub "createCrossknowledgeSessions_${Purpose}"
       Description: "Créé des sessions dans crossknowledge et les lie à des apprenants."
+      Timeout: 30
       Handler: handlers/create-crossknowledge-sessions.createCrossknowledgeSessions
       CodeUri: src/
       Layers:

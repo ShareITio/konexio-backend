@@ -138,7 +138,7 @@ exports.createCrossknowledgeSessions = async (event, context) => {
           }
           const { guid: sessionGUID } = sessionResponse.value[0];
           await Promise.all(
-            learnersGUID.map(async ({ guid: learnerGUID }) => {
+            learnersGUID.map(async (learnerGUID) => {
               console.log("Register : ", learnerGUID);
               const registerResponse = await registerSession(
                 sessionGUID,

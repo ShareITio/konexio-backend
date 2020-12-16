@@ -11,7 +11,7 @@ const HEADERS = {
 module.exports.getLearner = (guid) =>
   request({
     hostname: process.env.CROSSKNOWLEDGE_HOST,
-    path: `/API/ADMIN/v1/REST/Learner/${guid}`,
+    path: `/API/ADMIN/v1/REST/Learner/${guid}/`,
     method: "GET",
     headers: HEADERS,
   });
