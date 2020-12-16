@@ -10,7 +10,7 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
   let detailOnError;
   try {
     const dateSentAfter = new Date(
-      new Date(event.time) - 1000 * (60 * MINUTES)
+      new Date(event.time).setSeconds(0) - 1000 * (60 * MINUTES)
     );
     // throw new Error("Attention le chargement des message n'a pas pu se produire.");
     console.log("DateSentAfter :", dateSentAfter);
