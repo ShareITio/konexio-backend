@@ -114,7 +114,7 @@ Resources:
     Properties:
       FunctionName: !Ref putTwilioMessagesIntoAirtable
       FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
-      Name: live
+      Name: Staging
 
   ScheduledRule: 
     Type: AWS::Events::Rule
