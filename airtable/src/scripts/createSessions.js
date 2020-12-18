@@ -103,7 +103,7 @@ async () => {
     // Envoie des sessions de manière séquentielle pour éviter que CK rejette certaines réponses dû à de trop nombreux appels
     for (const i in data) {
       const session = data[i];
-      output.markdown(`🆙 Envoie de la session "${session.title}""`);
+      output.markdown(`🆙 Envoie de la session "${session.title}"`);
       const response = await fetch(config.APIurl, {
         method: "POST",
         body: JSON.stringify({ data: [session] }),
