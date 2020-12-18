@@ -94,12 +94,11 @@ Resources:
       Events:
         Schedule:
           Type: Schedule
-          Condition: IsProduction
           Properties:
             Schedule: rate(15 minutes)
             Name: !Sub "Schedule15minutes_${Purpose}"
             Description: Déclenché toutes les 15 minutes
-            Enabled: !Ref IsProduction
+            Enabled: !If [IsProduction, "ENABLED", "DISABLED"]
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
