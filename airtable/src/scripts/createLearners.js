@@ -1,7 +1,7 @@
 async () => {
   const config = input.config({
-    title: "Configuration",
-    description: "Un scrpit permettant de créer de nouveaux apprenant CK",
+    title: "Configuration de la création d'apprenants",
+    description: "Un scrpit permettant de créer de nouveaux apprenant CK.",
     items: [
       input.config.table("learnersTable", {
         label: "La table des apprennants",
@@ -22,15 +22,23 @@ async () => {
   try {
     output.markdown("### Création des comptes apprenants Crossknowledge");
     output.markdown(
-      "**Attention, un apprennant ne peut etre affilier qu'à un seul groupe.**"
+      "**Attention, un apprenant ne peut être affilier qu'à un seul groupe. Si plusieurs groupes lui a été affiliés seul le dernier sera pris en considération.**"
     );
-    output.markdown(
-      "**Si plusieurs ont été affiliés celui pris en considération sera le dernier.**"
-    );
+    let { records } = await config.learnersView.selectRecordsAsync();
 
-    let query = await config.learnersView.selectRecordsAsync();
+    if (records.length < 1) {
+      output.markdown("---");
+      output.markdown(
+        `🆗 Aucun compte à créer dans la vue "${config.learnersView.name}".`
+      );
+      // @ts-ignore
+      return;
+    }
 
-    const learners = query.records.map((record) => ({
+    output.markdown("Liste des apprenants à créer :");
+    output.table(records);
+
+    const learners = records.map((record) => ({
       id: record.getCellValue("Identifiant"),
       lastName: record.getCellValue("Nom"),
       firstName: record.getCellValue("Prénom"),
@@ -42,9 +50,7 @@ async () => {
         : [],
     }));
 
-    output.markdown("Liste des apprenants à créer :");
-    output.table(learners);
-    output.markdown("Envoi de la liste vers Crossknowledge via Lambda...");
+    output.markdown("🆙 Envoi des apprenants...");
 
     const response = await fetch(config.APIurl, {
       method: "POST",
@@ -60,25 +66,24 @@ async () => {
     const responseData = await response.json();
     if (responseData.data) {
       output.markdown(
-        "✅ Les comptes apprenants ont bien été créés dans Crossknowledge !"
+        "✅ Les comptes apprenants ont bien été créés dans Crossknowledge."
       );
-      output.markdown("Mise a jour des apprenants dans Airtable...");
-
       await config.learnersTable.updateRecordsAsync(
-        query.records.map((record, i) => ({
+        records.map((record, i) => ({
           id: record.id,
           fields: {
             "Compte CK créé": true,
             GUID: responseData.data[i].guid,
+            Identifiant: responseData.data[i].login,
           },
         }))
       );
-      output.text(
-        "✅ Identifiants Crossknowledge des apprenants mis à jour dans Airtable."
-      );
+      output.text("✅ Les apprenants ont bien été mis à jour dans Airtable.");
     } else {
       throw responseData;
     }
+    output.markdown("---");
+    output.text(`🆗 Tous les apprenants ont bien été créées.`);
   } catch (err) {
     output.markdown("---");
     output.markdown("❌ Une erreur s'est produite lors de l'enregistrement.");
