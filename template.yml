@@ -76,6 +76,9 @@ Resources:
 
   # This is a Lambda function config associated with the source code: put-twilio-messages-into-airtable.js
 
+  #
+  # FUNCTIONS
+  #
   # On créé à chaque fois 2 fonction pour chacun des env pour ne pas mélanger les variable denv
   putTwilioMessagesIntoAirtable:
     Type: AWS::Serverless::Function
@@ -104,35 +107,6 @@ Resources:
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
           PURPOSE: !Ref Purpose
-  putTwilioMessagesIntoAirtableVersion:
-    Type: AWS::Lambda::Version
-    Properties:
-      FunctionName: !Ref putTwilioMessagesIntoAirtable
-      Description: Version déployé automatiquement
-  putTwilioMessagesIntoAirtableAlias:
-    Type: AWS::Lambda::Alias
-    Properties:
-      FunctionName: !Ref putTwilioMessagesIntoAirtable
-      FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
-      Name: Staging
-
-  ScheduledRule: 
-    Type: AWS::Events::Rule
-    Properties:
-      Name: !Sub "Schedule15minutes_${Purpose}"
-      Description: Déclenché toutes les 15 minutes
-      ScheduleExpression: "rate(15 minutes)"
-      State: !If [IsProduction, "ENABLED", "DISABLED"]
-      Targets: 
-        - Arn: !Ref putTwilioMessagesIntoAirtableAlias
-          Id: putTwilioMessagesIntoAirtable
-  PermissionForEventsToInvokeLambda: 
-    Type: AWS::Lambda::Permission
-    Properties: 
-      FunctionName: !Ref putTwilioMessagesIntoAirtable
-      Action: "lambda:InvokeFunction"
-      Principal: "events.amazonaws.com"
-      SourceArn: !GetAtt ScheduledRule.Arn
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
@@ -143,6 +117,9 @@ Resources:
       Description: "Créé des comptes apprenants dans crossknowledge."
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       CodeUri: src/
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
       Layers:
         - !Ref KonexioBackendDepLayer
       Policies:
@@ -172,7 +149,6 @@ Resources:
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
           PURPOSE: !Ref Purpose
 
-
   # This is a Lambda function config associated with the source code: create-crossknowledge-sessions.js
   createCrossknowledgeSessions:
     Type: AWS::Serverless::Function
@@ -183,6 +159,9 @@ Resources:
       Timeout: 30
       Handler: handlers/create-crossknowledge-sessions.createCrossknowledgeSessions
       CodeUri: src/
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
       Layers:
         - !Ref KonexioBackendDepLayer
       Policies:
@@ -212,6 +191,74 @@ Resources:
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
           PURPOSE: !Ref Purpose
 
+ #
+ # VERSIONS
+ #
+  putTwilioMessagesIntoAirtableVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtable
+      Description: Version déployé automatiquement
+  putTwilioMessagesIntoAirtableAlias:
+    Type: AWS::Lambda::Alias
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtable
+      FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
+      Name: Staging
+
+ #
+ # EVENTS
+ #
+  ScheduledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "Schedule15minutes_${Purpose}"
+      Description: Déclenché toutes les 15 minutes
+      ScheduleExpression: "rate(15 minutes)"
+      State: !If [IsProduction, "ENABLED", "DISABLED"]
+      Targets: 
+        - Arn: !Ref putTwilioMessagesIntoAirtableAlias
+          Id: putTwilioMessagesIntoAirtable
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref putTwilioMessagesIntoAirtable
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule.Arn
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Purpose
+      TracingEnabled: true
+      Auth:
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          Description: Usage plan for this API
+      Cors:
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+        AllowOrigin: "'*'"
+
+  #
+  # OTHERS
+  #
+  KonexioBackendDepLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: konexio-backend-dependencies
+      Description: Dependencies for konexio-backend
+      ContentUri: lib/
+      CompatibleRuntimes:
+        - nodejs6.10
+        - nodejs8.10
+        - nodejs10.x
+        - nodejs12.x
+      LicenseInfo: "MIT"
+      RetentionPolicy: Delete
+
+  # fonction fantoche permettant de laisser passer mon api gateway en prod sans route concrete
   testprod:
     Type: AWS::Serverless::Function
     Condition: IsProduction
@@ -229,31 +276,3 @@ Resources:
             RestApiId: !Ref ApiGateway
             Auth:
               ApiKeyRequired: true
-
-  ApiGateway:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: !Ref Purpose
-      TracingEnabled: true
-      Auth:
-        UsagePlan:
-          CreateUsagePlan: PER_API
-          Description: Usage plan for this API
-      Cors:
-        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
-        AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
-        AllowOrigin: "'*'"
-
-  KonexioBackendDepLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      LayerName: konexio-backend-dependencies
-      Description: Dependencies for konexio-backend
-      ContentUri: lib/
-      CompatibleRuntimes:
-        - nodejs6.10
-        - nodejs8.10
-        - nodejs10.x
-        - nodejs12.x
-      LicenseInfo: "MIT"
-      RetentionPolicy: Retain
