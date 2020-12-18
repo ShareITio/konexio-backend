@@ -233,4 +233,4 @@ Resources:
         - nodejs10.x
         - nodejs12.x
       LicenseInfo: "MIT"
-      RetentionPolicy: Retain
+      RetentionPolicy: Delete
