@@ -54,20 +54,10 @@ Parameters:
   DefaultLayerArn:
     Type: String
     Default: arn:aws:lambda:eu-west-3:452969718563:layer:konexio-backend-dependencies:132
-  # Si on met à jour les node_modules. passer cette variable une fois à true
-  LayerState:
-    Type: String
-    Default: updated
-    AllowedValues:
-      - outdated
-      - updated
-    Description: The purpose of this instance.
 
 Conditions:
   IsProduction: !Equals [!Ref Purpose, production]
   IsNotProduction: !Not [Condition: IsProduction]
-  # en production on publie à chaque fois le nouveau layer
-  MustUpdateLayer: !Or [!Equals [!Ref LayerState, outdated], Condition: IsProduction]
 
 # Global information for all the functions
 Globals:
@@ -85,6 +75,8 @@ Resources:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
   # This is a Lambda function config associated with the source code: put-twilio-messages-into-airtable.js
+
+  # On créé à chaque fois 2 fonction pour chacun des env pour ne pas mélanger les variable denv
   putTwilioMessagesIntoAirtable:
     Type: AWS::Serverless::Function
     Properties:
@@ -93,25 +85,14 @@ Resources:
       Handler: handlers/put-twilio-messages-into-airtable.putTwilioMessagesIntoAirtable
       Timeout: 20
       CodeUri: src/
-      AutoPublishAlias: live
-      DeploymentPreference:
-        Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
       Layers:
-        - !If [MustUpdateLayer, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
+        - !Ref KonexioBackendDepLayer
       Policies:
         - Statement:
           - Effect: Allow
             Action:
             - sns:Publish
             Resource: '*'
-      Events:
-        Schedule:
-          Type: Schedule
-          Properties:
-            Schedule: rate(15 minutes)
-            Name: !Sub "Schedule15minutes_${Purpose}"
-            Description: Déclenché toutes les 15 minutes
-            Enabled: !If [IsProduction, "ENABLED", "DISABLED"]
       Environment:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
@@ -123,6 +104,36 @@ Resources:
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
           PURPOSE: !Ref Purpose
+  putTwilioMessagesIntoAirtableVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtable
+      Description: Version déployé automatiquement
+  putTwilioMessagesIntoAirtableAlias:
+    Type: AWS::Lambda::Alias
+    Properties:
+      FunctionName: !Ref putTwilioMessagesIntoAirtable
+      FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
+      Name: live
+
+  ScheduledRule: 
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "Schedule15minutes_${Purpose}"
+      Description: Déclenché toutes les 15 minutes
+      ScheduleExpression: "rate(15 minutes)"
+      State: !If [IsProduction, "ENABLED", "DISABLED"]
+      Targets: 
+        - Arn: !Ref putTwilioMessagesIntoAirtableAlias
+          Id: putTwilioMessagesIntoAirtable
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref putTwilioMessagesIntoAirtable
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule.Arn
+
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
@@ -133,7 +144,7 @@ Resources:
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       CodeUri: src/
       Layers:
-        - !If [MustUpdateLayer, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
+        - !Ref KonexioBackendDepLayer
       Policies:
         - Statement:
           - Effect: Allow
@@ -173,7 +184,7 @@ Resources:
       Handler: handlers/create-crossknowledge-sessions.createCrossknowledgeSessions
       CodeUri: src/
       Layers:
-        - !If [MustUpdateLayer, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
+        - !Ref KonexioBackendDepLayer
       Policies:
         - Statement:
           - Effect: Allow
@@ -235,7 +246,6 @@ Resources:
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
-    Condition: MustUpdateLayer
     Properties:
       LayerName: konexio-backend-dependencies
       Description: Dependencies for konexio-backend
@@ -246,4 +256,4 @@ Resources:
         - nodejs10.x
         - nodejs12.x
       LicenseInfo: "MIT"
-      RetentionPolicy: Delete
+      RetentionPolicy: Retain
