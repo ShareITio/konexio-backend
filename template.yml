@@ -51,11 +51,13 @@ Parameters:
   ErrorTopicArn:
     Type: String
     # Default: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:LambdaError"
-
+  DefaultLayerArn:
+    Type: String
+    Default: arn:aws:lambda:eu-west-3:452969718563:layer:konexio-backend-dependencies:132
 Conditions:
   IsProduction: !Equals [!Ref Purpose, production]
   IsNotProduction: !Not [Condition: IsProduction]
-
+  IsLayerUpdated: False # Si on met à jour les node_modules. passer cette variable une fois à true
 # Global information for all the functions
 Globals:
   Function:
@@ -84,7 +86,7 @@ Resources:
       DeploymentPreference:
         Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
       Layers:
-        - !Ref KonexioBackendDepLayer
+        - !If [IsLayerUpdated, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
       Policies:
         - Statement:
           - Effect: Allow
@@ -121,7 +123,7 @@ Resources:
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       CodeUri: src/
       Layers:
-        - !Ref KonexioBackendDepLayer
+        - !If [IsLayerUpdated, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
       Policies:
         - Statement:
           - Effect: Allow
@@ -161,7 +163,7 @@ Resources:
       Handler: handlers/create-crossknowledge-sessions.createCrossknowledgeSessions
       CodeUri: src/
       Layers:
-        - !Ref KonexioBackendDepLayer
+        - !If [IsLayerUpdated, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
       Policies:
         - Statement:
           - Effect: Allow
@@ -223,6 +225,7 @@ Resources:
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
+    Condition: IsLayerUpdated
     Properties:
       LayerName: konexio-backend-dependencies
       Description: Dependencies for konexio-backend
