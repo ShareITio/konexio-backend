@@ -40,6 +40,21 @@ const makeNoLearnerError = ({ detail }) => ({
   message: `Certains guid d'apprenants n'existent pas.`,
   detail: detail,
 });
+const makeCreateLearnerError = ({
+  title,
+  learnerGUID,
+  sessionGUID,
+  detail,
+}) => ({
+  code: 6,
+  message: `L'enregistrement de l'apprenant ${learnerGUID} à la session "${title}" (${sessionGUID}) a échoué.`,
+  detail: detail,
+});
+const makeCreateSessionError = ({ title, detail }) => ({
+  code: 7,
+  message: `La création de la session "${title}" a échoué.`,
+  detail: detail,
+});
 
 const makeReturnError = (errorObject) => ({
   ok: false,
@@ -58,7 +73,7 @@ exports.createCrossknowledgeSessions = async (event, context) => {
     } = getInfo(event, context);
     console.log(data);
 
-    // Lien avec les GUID Training et verification des données
+    // Lien avec les GUID Training et verification/Formatage des données
     const trainings = await getTrainings();
     console.log(trainings);
     const formatedSessions = data.map((session, i) => {
@@ -75,6 +90,7 @@ exports.createCrossknowledgeSessions = async (event, context) => {
           makeTrainingError({ title: session.program, detail: session })
         );
       }
+      // formatage des apprenants
       let learnersFormated = [];
       if (session.learners && session.learners.length > 0) {
         learnersFormated = session.learners.map((learner, j) => {
@@ -117,6 +133,7 @@ exports.createCrossknowledgeSessions = async (event, context) => {
     console.log("Tous les apprenants existent bien dans crossknowledge");
     console.log("Envoie des données vers CK");
 
+    // à partir d'ici, toutes les données sont conformes et peuvent etre envoyées vers CK
     // Envoie des données vers crossknowledge
     const result = await Promise.all(
       formatedSessions.map(
@@ -137,8 +154,11 @@ exports.createCrossknowledgeSessions = async (event, context) => {
             trainingGUID,
           });
           if (!sessionResponse.success) {
-            throw makeReturnError(sessionResponse);
+            throw makeReturnError(
+              makeCreateSessionError({ title, detail: sessionResponse })
+            );
           }
+
           const { guid: sessionGUID } = sessionResponse.value[0];
           await Promise.all(
             learnersGUID.map(async (learnerGUID) => {
@@ -148,7 +168,14 @@ exports.createCrossknowledgeSessions = async (event, context) => {
                 learnerGUID
               );
               if (!registerResponse.success) {
-                throw makeReturnError(registerResponse);
+                throw makeReturnError(
+                  makeCreateLearnerError({
+                    title,
+                    sessionGUID,
+                    learnerGUID,
+                    detail: registerResponse,
+                  })
+                );
               }
             })
           );
