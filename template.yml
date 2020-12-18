@@ -54,10 +54,11 @@ Parameters:
   DefaultLayerArn:
     Type: String
     Default: arn:aws:lambda:eu-west-3:452969718563:layer:konexio-backend-dependencies:132
+  IsLayerUpdated: False # Si on met à jour les node_modules. passer cette variable une fois à true
+
 Conditions:
   IsProduction: !Equals [!Ref Purpose, production]
   IsNotProduction: !Not [Condition: IsProduction]
-  IsLayerUpdated: False # Si on met à jour les node_modules. passer cette variable une fois à true
 # Global information for all the functions
 Globals:
   Function:
