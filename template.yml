@@ -54,13 +54,21 @@ Parameters:
   DefaultLayerArn:
     Type: String
     Default: arn:aws:lambda:eu-west-3:452969718563:layer:konexio-backend-dependencies:132
-  IsLayerUpdated: 
-    Type: Boolean
-    Default: False # Si on met à jour les node_modules. passer cette variable une fois à true
+  # Si on met à jour les node_modules. passer cette variable une fois à true
+  LayerState:
+    Type: String
+    Default: updated
+    AllowedValues:
+      - outdated
+      - updated
+    Description: The purpose of this instance.
 
 Conditions:
   IsProduction: !Equals [!Ref Purpose, production]
   IsNotProduction: !Not [Condition: IsProduction]
+  # en production on publie à chaque fois le nouveau layer
+  MustUpdateLayer: !Or [!Equals [!Ref LayerState, outdated], Condition: IsProduction]
+
 # Global information for all the functions
 Globals:
   Function:
@@ -89,7 +97,7 @@ Resources:
       DeploymentPreference:
         Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
       Layers:
-        - !If [IsLayerUpdated, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
+        - !If [MustUpdateLayer, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
       Policies:
         - Statement:
           - Effect: Allow
@@ -125,7 +133,7 @@ Resources:
       Handler: handlers/create-crossknowledge-learners.createCrossknowledgeLearners
       CodeUri: src/
       Layers:
-        - !If [IsLayerUpdated, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
+        - !If [MustUpdateLayer, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
       Policies:
         - Statement:
           - Effect: Allow
@@ -165,7 +173,7 @@ Resources:
       Handler: handlers/create-crossknowledge-sessions.createCrossknowledgeSessions
       CodeUri: src/
       Layers:
-        - !If [IsLayerUpdated, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
+        - !If [MustUpdateLayer, !Ref KonexioBackendDepLayer, !Ref DefaultLayerArn]
       Policies:
         - Statement:
           - Effect: Allow
@@ -227,7 +235,7 @@ Resources:
 
   KonexioBackendDepLayer:
     Type: AWS::Serverless::LayerVersion
-    Condition: IsLayerUpdated
+    Condition: MustUpdateLayer
     Properties:
       LayerName: konexio-backend-dependencies
       Description: Dependencies for konexio-backend
