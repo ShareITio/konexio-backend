@@ -24,7 +24,7 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
     ]);
     messages = twilioList.filter(({ direction }) => direction === "inbound");
 
-    if (messages.length < 1) {
+    if (!messages || messages.length < 1) {
       console.log("No messages received");
       return `No new record created/received.`;
     }
@@ -59,9 +59,11 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
     return `Record created/received : ${messages.length}`;
   } catch (err) {
     console.error(err);
-    return notifyError(err, event, context, {
-      reason: "Voici les SMS que la fonction n'a pas pu enregistrer.",
-      data: messages,
-    });
+    if (process.env.PURPOSE === "production") {
+      return notifyError(err, event, context, {
+        reason: "Voici les SMS que la fonction n'a pas pu enregistrer.",
+        data: messages,
+      });
+    }
   }
 };
