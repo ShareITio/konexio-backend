@@ -1,4 +1,4 @@
-const { create, list } = require("../../src/twilio");
+const { create, list } = require("../src/twilio");
 
 jest.mock("twilio", () => () => ({
   messages: {

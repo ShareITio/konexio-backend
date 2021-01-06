@@ -1,4 +1,4 @@
-const { makeReturn } = require("../../src/tools");
+const { makeReturn } = require("../src/tools");
 
 test("should make a good data return request", () => {
   const body = "My body";

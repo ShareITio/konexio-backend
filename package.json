@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "author": "Johann Hospice",
   "scripts": {
-    "test": "dotenv jest"
+    "test": "dotenv jest",
+    "test:watch": "dotenv jest --watch"
   },
   "dependencies": {
     "airtable": "^0.10.0",
