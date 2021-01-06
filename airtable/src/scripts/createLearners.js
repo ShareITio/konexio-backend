@@ -1,20 +1,36 @@
 async () => {
+  // Créer des comptes apprenants Crossknowledge
   const config = input.config({
     title: "Configuration de la création d'apprenants",
-    description: "Un scrpit permettant de créer de nouveaux apprenant CK.",
+    description:
+      "Un scrpit permettant de créer de nouveaux apprenants Crossknowledge.",
     items: [
       input.config.table("learnersTable", {
-        label: "La table des apprennants",
+        label: "Table des apprennants",
       }),
       input.config.view("learnersView", {
-        label: "Vue des apprenant à créer",
+        label: "Vue des apprenants à créer",
         parentTable: "learnersTable",
       }),
-      input.config.text("APIurl", {
-        label: "Point de terminaison d’API",
+      input.config.field("learnerId", {
+        label: "Champs identifiant des apprenants",
+        parentTable: "learnersTable",
       }),
-      input.config.text("APIkey", {
-        label: "Clé API",
+      input.config.field("learnerEmail", {
+        label: "Champs email des apprenants",
+        parentTable: "learnersTable",
+      }),
+      input.config.field("learnerFirstname", {
+        label: "Champs prénom des apprenants",
+        parentTable: "learnersTable",
+      }),
+      input.config.field("learnerLastname", {
+        label: "Champs nom des apprenants",
+        parentTable: "learnersTable",
+      }),
+      input.config.field("learnerGroup", {
+        label: "Champs groupe des apprenants",
+        parentTable: "learnersTable",
       }),
     ],
   });
@@ -22,7 +38,7 @@ async () => {
   try {
     output.markdown("### Création des comptes apprenants Crossknowledge");
     output.markdown(
-      "**Attention, un apprenant ne peut être affilier qu'à un seul groupe. Si plusieurs groupes lui a été affiliés seul le dernier sera pris en considération.**"
+      "**Attention, un apprenant ne peut être affilié qu'à un seul groupe. Si plusieurs groupes lui ont été affilié seul le dernier sera pris en considération.**"
     );
     let { records } = await config.learnersView.selectRecordsAsync();
 
@@ -39,27 +55,27 @@ async () => {
     output.table(records);
 
     const learners = records.map((record) => ({
-      id: record.getCellValue("Identifiant"),
-      lastName: record.getCellValue("Nom"),
-      firstName: record.getCellValue("Prénom"),
-      email: record.getCellValue("Email"),
-      group: record.getCellValue("Groupe")
+      id: record.getCellValue(config.learnerId),
+      lastName: record.getCellValue(config.learnerLastname),
+      firstName: record.getCellValue(config.learnerFirstname),
+      email: record.getCellValue(config.learnerEmail),
+      group: record.getCellValue(config.learnerGroup)
         ? record
-            .getCellValue("Groupe")
+            .getCellValue(config.learnerGroup)
             .reduce((acc, cur) => cur.name, undefined)
         : [],
     }));
 
     output.markdown("🆙 Envoi des apprenants...");
 
-    const response = await fetch(config.APIurl, {
+    const response = await fetch(process.env.LAMBDA_API_URL_LEARNERS, {
       method: "POST",
       body: JSON.stringify({
         data: learners,
       }),
       headers: {
         "Content-Type": "application/json",
-        "X-Api-Key": config.APIkey,
+        "X-Api-Key": process.env.LAMBDA_API_KEY,
       },
     });
 

@@ -2,7 +2,9 @@ async () => {
   // Envoyer les sessions Airtable vers Crossknowledge
   const config = input.config({
     title: "Configuration de la création de sessions",
-    description: "Un scrpit permettant de créer de nouvelles sessions CK.",
+    description:
+      "Ce script permet de créer de nouvelles sessions dans Crossknowledge.\n" +
+      "Les paramètres ci-dessous servent à trouver les informations requisent à la bonne execution du script (Il n'est pas nécessaire d'y toucher).",
     items: [
       input.config.table("sessionTable", {
         label: "La table des sessions",
@@ -18,11 +20,37 @@ async () => {
         label: "La vue des des apprenants à lier",
         parentTable: "learnerTable",
       }),
-      input.config.text("APIurl", {
-        label: "Point de terminaison d’API",
+      input.config.field("learnerId", {
+        label: "Champs identifiant des apprenants",
+        parentTable: "learnerTable",
       }),
-      input.config.text("APIkey", {
-        label: "Clé API",
+      input.config.field("learnerEmail", {
+        label: "Champs email des apprenants",
+        parentTable: "learnerTable",
+      }),
+      input.config.field("learnerGUID", {
+        label: "Champs GUID des apprenants",
+        parentTable: "learnerTable",
+      }),
+      input.config.field("sessionProgram", {
+        label: "Champs programme des apprenants",
+        parentTable: "sessionTable",
+      }),
+      input.config.field("sessionTitle", {
+        label: "Champs titre des apprenants",
+        parentTable: "sessionTable",
+      }),
+      input.config.field("sessionStart", {
+        label: "Champs date de début des apprenants",
+        parentTable: "sessionTable",
+      }),
+      input.config.field("sessionEnd", {
+        label: "Champs date de fin des apprenants",
+        parentTable: "sessionTable",
+      }),
+      input.config.field("sessionWelcomeText", {
+        label: "Champs texte de bienvenue des apprenants",
+        parentTable: "sessionTable",
       }),
     ],
   });
@@ -62,12 +90,12 @@ async () => {
               ({ id }) => learnerRecord.id === id
             );
             if (learnerCreated) {
-              const guid = learnerCreated.getCellValue("GUID");
+              const guid = learnerCreated.getCellValue(config.learnerGUID);
               if (guid) {
                 return {
                   guid,
-                  id: learnerCreated.getCellValue("Identifiant"),
-                  email: learnerCreated.getCellValue("Email"),
+                  id: learnerCreated.getCellValue(config.learnerId),
+                  email: learnerCreated.getCellValue(config.learnerEmail),
                 };
               }
             }
@@ -79,11 +107,11 @@ async () => {
           });
       }
       const data = {
-        program: sessionRecord.getCellValue("Programme"),
-        title: sessionRecord.getCellValue("Titre"),
-        start: sessionRecord.getCellValue("Date de début"),
-        end: sessionRecord.getCellValue("Date de fin"),
-        welcomeText: sessionRecord.getCellValue("Welcome text"),
+        program: sessionRecord.getCellValue(config.sessionProgram),
+        title: sessionRecord.getCellValue(config.sessionTitle),
+        start: sessionRecord.getCellValue(config.sessionStart),
+        end: sessionRecord.getCellValue(config.sessionEnd),
+        welcomeText: sessionRecord.getCellValue(config.sessionWelcomeText),
         learners,
       };
 
@@ -103,13 +131,13 @@ async () => {
     // Envoie des sessions de manière séquentielle pour éviter que CK rejette certaines réponses dû à de trop nombreux appels
     for (const i in data) {
       const session = data[i];
-      output.markdown(`🆙 Envoie de la session "${session.title}"...`);
-      const response = await fetch(config.APIurl, {
+      output.markdown(`🆙 Envoie de la session "${session.title}".`);
+      const response = await fetch(process.env.LAMBDA_API_URL_SESSIONS, {
         method: "POST",
         body: JSON.stringify({ data: [session] }),
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": config.APIkey,
+          "x-api-key": process.env.LAMBDA_API_KEY,
         },
       });
 
