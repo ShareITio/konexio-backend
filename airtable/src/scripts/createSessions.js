@@ -3,49 +3,48 @@ async () => {
   const config = input.config({
     title: "Configuration de la création de sessions",
     description:
-      "Ce script permet de créer de nouvelles sessions dans Crossknowledge.\n" +
-      "Les paramètres ci-dessous servent à trouver les informations requisent à la bonne execution du script (Il n'est pas nécessaire d'y toucher).",
+      "Ce script permet de créer de nouvelles sessions dans CrossKnowledge. Les paramètres ci-dessous servent à trouver les informations requises à la bonne exécution du script (Il n'est pas nécessaire d'y toucher).",
     items: [
       input.config.table("sessionTable", {
-        label: "La table des sessions",
+        label: "Table des sessions",
       }),
       input.config.view("sessionView", {
-        label: "La vue des des sessions à créer",
+        label: "Vue des sessions à créer",
         parentTable: "sessionTable",
       }),
       input.config.table("learnerTable", {
-        label: "La table des apprenants à lier",
+        label: "Table des apprenants à lier",
       }),
       input.config.view("learnerView", {
-        label: "La vue des des apprenants à lier",
+        label: "Vue des apprenants à lier",
         parentTable: "learnerTable",
       }),
       input.config.field("learnerId", {
-        label: "Champs identifiant des apprenants",
+        label: "Champ identifiant des apprenants",
         parentTable: "learnerTable",
       }),
       input.config.field("learnerEmail", {
-        label: "Champs email des apprenants",
+        label: "Champ email des apprenants",
         parentTable: "learnerTable",
       }),
       input.config.field("learnerGUID", {
-        label: "Champs GUID des apprenants",
+        label: "Champ GUID des apprenants",
         parentTable: "learnerTable",
       }),
       input.config.field("sessionProgram", {
-        label: "Champs programme des apprenants",
+        label: "Champ programme des apprenants",
         parentTable: "sessionTable",
       }),
       input.config.field("sessionTitle", {
-        label: "Champs titre des apprenants",
+        label: "Champ titre des apprenants",
         parentTable: "sessionTable",
       }),
       input.config.field("sessionStart", {
-        label: "Champs date de début des apprenants",
+        label: "Champ date de début des apprenants",
         parentTable: "sessionTable",
       }),
       input.config.field("sessionEnd", {
-        label: "Champs date de fin des apprenants",
+        label: "Champ date de fin des apprenants",
         parentTable: "sessionTable",
       }),
       input.config.field("sessionWelcomeText", {

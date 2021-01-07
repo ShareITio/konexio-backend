@@ -3,7 +3,7 @@ async () => {
   const config = input.config({
     title: "Configuration de la création d'apprenants",
     description:
-      "Un scrpit permettant de créer de nouveaux apprenants Crossknowledge.",
+      "Ce script permet de créer de nouveaux apprenants dans CrossKnowledge. Les paramètres ci-dessous servent à trouver les informations requises à la bonne exécution du script (Il n'est pas nécessaire d'y toucher).",
     items: [
       input.config.table("learnersTable", {
         label: "Table des apprennants",
