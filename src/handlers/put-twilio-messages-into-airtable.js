@@ -5,7 +5,7 @@ const {
   MESSAGE_STATUS_TOBETREATED,
   MESSAGE_SCHEDULED_MINUTES,
   ENVIRONMENT_PRODUCTION,
-} = require("../constant");
+} = require("../constants");
 
 // Fonction permettant de récupérer les sms recu de ces 15 derniere minutes sur Twilio et de les envoyer sur airtable
 exports.putTwilioMessagesIntoAirtable = async (event, context) => {

@@ -12,7 +12,7 @@ const {
   CROSSKNOWLEDGE_STATUS_OK,
   CROSSKNOWLEDGE_LANGUAGE,
   ENVIRONMENT_PRODUCTION,
-} = require("../constant");
+} = require("../constants");
 
 // Créé des comptes apprenants dans crossknowledge
 exports.createCrossknowledgeLearners = async (event, context) => {

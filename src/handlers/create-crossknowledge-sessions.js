@@ -11,7 +11,7 @@ const {
   getTrainings,
   getLearner,
 } = require("../crossknowledge");
-const { ENVIRONMENT_PRODUCTION } = require("../constant");
+const { ENVIRONMENT_PRODUCTION } = require("../constants");
 /**
  * Probleme avec CK lorsque trop de requete, il ne repond plus et renvoie un data undefined
  */
