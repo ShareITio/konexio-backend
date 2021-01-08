@@ -6,6 +6,13 @@ const {
 } = require("../tools");
 const { notifyError } = require("../awsServices");
 const { createLearner } = require("../crossknowledge");
+const {
+  CROSSKNOWLEDGE_KONEXIO_ENTITY,
+  CROSSKNOWLEDGE_CUSTOMFIELDS_GROUP,
+  CROSSKNOWLEDGE_STATUS_OK,
+  CROSSKNOWLEDGE_LANGUAGE,
+  ENVIRONMENT_PRODUCTION,
+} = require("../constant");
 
 // Créé des comptes apprenants dans crossknowledge
 exports.createCrossknowledgeLearners = async (event, context) => {
@@ -29,11 +36,11 @@ exports.createCrossknowledgeLearners = async (event, context) => {
           name,
           firstName,
           email,
-          status: "Y",
-          language: "fr-FR",
-          entityGuid: "101B1F43-2D44-0AAC-CDA6-F4B8ED66F385", // Konexio entity
+          status: CROSSKNOWLEDGE_STATUS_OK,
+          language: CROSSKNOWLEDGE_LANGUAGE,
+          entityGuid: CROSSKNOWLEDGE_KONEXIO_ENTITY,
           customFields: {
-            "5BD8779F-BD3A-6F83-A44B-3CF77D67B2C2": group,
+            [CROSSKNOWLEDGE_CUSTOMFIELDS_GROUP]: group,
           },
         });
       })
@@ -54,7 +61,9 @@ exports.createCrossknowledgeLearners = async (event, context) => {
     throw result;
   } catch (reason) {
     console.error(reason);
-    await notifyError(reason, event, context);
+    if (process.env.PURPOSE === ENVIRONMENT_PRODUCTION) {
+      await notifyError(reason, event, context);
+    }
     return makeReturn("An error as occured.", STATUS_ERROR);
   }
 };

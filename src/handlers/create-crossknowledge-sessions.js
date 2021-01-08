@@ -11,7 +11,7 @@ const {
   getTrainings,
   getLearner,
 } = require("../crossknowledge");
-
+const { ENVIRONMENT_PRODUCTION } = require("../constant");
 /**
  * Probleme avec CK lorsque trop de requete, il ne repond plus et renvoie un data undefined
  */
@@ -194,7 +194,9 @@ exports.createCrossknowledgeSessions = async (event, context) => {
     );
   } catch (reason) {
     console.error(reason);
-    await notifyError(reason, event, context);
+    if (process.env.PURPOSE === ENVIRONMENT_PRODUCTION) {
+      await notifyError(reason, event, context);
+    }
     return makeReturn(reason, STATUS_ERROR);
   }
 };

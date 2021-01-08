@@ -1,8 +1,11 @@
 const { notifyError } = require("../awsServices");
 const { list } = require("../twilio");
 const { createMessage, fetchCandidates } = require("../airtableServices");
-
-const MINUTES = 15;
+const {
+  MESSAGE_STATUS_TOBETREATED,
+  MESSAGE_SCHEDULED_MINUTES,
+  ENVIRONMENT_PRODUCTION,
+} = require("../constant");
 
 // Fonction permettant de récupérer les sms recu de ces 15 derniere minutes sur Twilio et de les envoyer sur airtable
 exports.putTwilioMessagesIntoAirtable = async (event, context) => {
@@ -11,7 +14,9 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
   try {
     const eventTime = new Date(event.time);
     const options = {
-      dateSentAfter: new Date(eventTime - 1000 * (60 * MINUTES)),
+      dateSentAfter: new Date(
+        eventTime - 1000 * (60 * MESSAGE_SCHEDULED_MINUTES)
+      ),
       dateSentBefore: eventTime,
     };
 
@@ -47,7 +52,7 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
         return createMessage({
           from,
           body,
-          status: "À traiter",
+          status: MESSAGE_STATUS_TOBETREATED,
           to: process.env.TWILIO_PHONE,
           candidates: relatedCandidates,
           dateReceived: dateSent,
@@ -59,7 +64,7 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
     return `Record created/received : ${messages.length}`;
   } catch (err) {
     console.error(err);
-    if (process.env.PURPOSE === "production") {
+    if (process.env.PURPOSE === ENVIRONMENT_PRODUCTION) {
       return notifyError(err, event, context, {
         reason: "Voici les SMS que la fonction n'a pas pu enregistrer.",
         data: messages,
