@@ -35,6 +35,10 @@ Parameters:
   AirtableApiKey:
     Type: String
     NoEcho: true
+  AirtableCandidatesTable:
+    Type: String
+  AirtableMessagesTable:
+    Type: String
   TwilioAccountSid:
     Type: String
     NoEcho: true
@@ -100,11 +104,13 @@ Resources:
         Variables:
           AIRTABLE_BASE: !Ref AirtableBase
           AIRTABLE_API_KEY: !Ref AirtableApiKey
+          AIRTABLE_CANDIDATES_TABLE: !Ref AirtableCandidatesTable
+          AIRTABLE_MESSAGE_TABLE: !Ref AirtableMessagesTable
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
           TWILIO_PHONE: !Ref TwilioPhone
-          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
-          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
+          # CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
+          # CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
           PURPOSE: !Ref Purpose
 
@@ -139,11 +145,13 @@ Resources:
               ApiKeyRequired: true
       Environment:
         Variables:
-          AIRTABLE_BASE: !Ref AirtableBase
-          AIRTABLE_API_KEY: !Ref AirtableApiKey
-          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
-          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
-          TWILIO_PHONE: !Ref TwilioPhone
+          # AIRTABLE_BASE: !Ref AirtableBase
+          # AIRTABLE_API_KEY: !Ref AirtableApiKey
+          # AIRTABLE_CANDIDATES_TABLE: !Ref AirtableCandidatesTable
+          # AIRTABLE_MESSAGE_TABLE: !Ref AirtableMessagesTable
+          # TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+          # TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          # TWILIO_PHONE: !Ref TwilioPhone
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
@@ -181,11 +189,13 @@ Resources:
               ApiKeyRequired: true
       Environment:
         Variables:
-          AIRTABLE_BASE: !Ref AirtableBase
-          AIRTABLE_API_KEY: !Ref AirtableApiKey
-          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
-          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
-          TWILIO_PHONE: !Ref TwilioPhone
+          # AIRTABLE_BASE: !Ref AirtableBase
+          # AIRTABLE_API_KEY: !Ref AirtableApiKey
+          # AIRTABLE_CANDIDATES_TABLE: !Ref AirtableCandidatesTable
+          # AIRTABLE_MESSAGE_TABLE: !Ref AirtableMessagesTable
+          # TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+          # TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          # TWILIO_PHONE: !Ref TwilioPhone
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn

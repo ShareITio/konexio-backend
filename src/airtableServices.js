@@ -9,7 +9,7 @@ const schemaMessage = {
   dateReceived: "Date et heure de réception",
 };
 module.exports.createMessage = makeCreate(
-  "💌Messages",
+  process.env.AIRTABLE_MESSAGE_TABLE,
   makeSchema(schemaMessage, (name) =>
     schemaMessage.dateSent === name || schemaMessage.dateReceived === name
       ? (data) => data.toISOString()
@@ -22,7 +22,7 @@ const schemaCandidate = {
   messageReceived: "Messages reçus",
 };
 module.exports.fetchCandidates = makeFetcher(
-  "🙋‍♂️Candidatures DigitAll et DigiStart",
+  process.env.AIRTABLE_CANDIDATES_TABLE,
   "Master view",
   makeSchema(schemaCandidate, (name) => (data) => data.get(name))
 );
