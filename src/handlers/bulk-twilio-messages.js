@@ -27,9 +27,10 @@ exports.bulkTwilioMessages = async (event, context) => {
     console.log("options :", options);
     const [messageRecorded, candidates, twilioList] = await Promise.all([
       // recuperation des messages de ces 24 dernieres heures
-      fetchMessages(
-        "IS_AFTER({Date et heure de réception}, DATEADD(NOW(), -24, 'hours')))"
-      ),
+      fetchMessages({
+        filterByFormula:
+          "IS_AFTER({Date et heure de réception}, DATEADD(NOW(), -24, 'hours'))",
+      }),
       // On récupere tous les candidats
       fetchCandidates(),
       // On récupère les sms de ces 15 dernieres minutes
@@ -41,14 +42,14 @@ exports.bulkTwilioMessages = async (event, context) => {
     const savedMessages = twilioList
       // seulement les messages entrants
       .filter(({ direction }) => direction === "inbound")
-      // on compare la presence des messages sur leurs identifiant URI
-      .filter(({ uri: uri1 }) =>
-        messageRecorded.some(({ uri: uri2 }) => uri1 === uri2)
+      // on compare la presence des messages sur leurs identifiant SID
+      .filter(({ sid: sid1 }) =>
+        messageRecorded.some(({ sid: sid2 }) => sid1 === sid2)
       );
     // on récupère la différence entre ce bien sauvé et l'ensemble sur twilio
     const messages = twilioList.reduce(
       (acc, mes) =>
-        savedMessages.some(({ uri }) => mes.uri === uri) ? acc : [...acc, mes],
+        savedMessages.some(({ sid }) => mes.sid === sid) ? acc : [...acc, mes],
       []
     );
 

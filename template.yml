@@ -109,8 +109,6 @@ Resources:
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
           TWILIO_PHONE: !Ref TwilioPhone
-          # CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
-          # CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
           PURPOSE: !Ref Purpose
 
@@ -119,9 +117,10 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "bulkTwilioMessages_${Purpose}"
-      Description: "Fonction permettant de récupérer et verifier le bon enregistrement des sms sms recu ces 24 derniere heures sur Twilio et de les envoyer sur airtable."
-      Handler: handlers/put-twilio-messages-into-airtable.bulkTwilioMessages
+      Description: "Récupére et verifie le bon enregistrement des sms sms recu ces 24 derniere heures sur Twilio et de les envoyer sur airtable."
+      Handler: handlers/bulk-twilio-messages.bulkTwilioMessages
       Timeout: 30
+      MemorySize: 256
       CodeUri: src/
       Layers:
         - !Ref KonexioBackendDepLayer
@@ -140,8 +139,6 @@ Resources:
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
           TWILIO_PHONE: !Ref TwilioPhone
-          # CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
-          # CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
           PURPOSE: !Ref Purpose
 
@@ -176,13 +173,6 @@ Resources:
               ApiKeyRequired: true
       Environment:
         Variables:
-          # AIRTABLE_BASE: !Ref AirtableBase
-          # AIRTABLE_API_KEY: !Ref AirtableApiKey
-          # AIRTABLE_CANDIDATES_TABLE: !Ref AirtableCandidatesTable
-          # AIRTABLE_MESSAGE_TABLE: !Ref AirtableMessagesTable
-          # TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
-          # TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
-          # TWILIO_PHONE: !Ref TwilioPhone
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
@@ -220,13 +210,6 @@ Resources:
               ApiKeyRequired: true
       Environment:
         Variables:
-          # AIRTABLE_BASE: !Ref AirtableBase
-          # AIRTABLE_API_KEY: !Ref AirtableApiKey
-          # AIRTABLE_CANDIDATES_TABLE: !Ref AirtableCandidatesTable
-          # AIRTABLE_MESSAGE_TABLE: !Ref AirtableMessagesTable
-          # TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
-          # TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
-          # TWILIO_PHONE: !Ref TwilioPhone
           CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
           CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn

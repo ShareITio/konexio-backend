@@ -42,7 +42,7 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
 
     // Envoie les sms vers Airtable
     await Promise.all(
-      messages.map(({ from, body, dateSent }) => {
+      messages.map(({ from, body, dateSent, sid }) => {
         // Recherche des Candidats ayant envoyé le sms (en fonction du numéro de téléphone)
         const relatedCandidates = candidates
           .filter(({ phone }) => phone === from)
@@ -58,6 +58,7 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
           to: process.env.TWILIO_PHONE,
           candidates: relatedCandidates,
           dateReceived: dateSent,
+          sid,
         });
       })
     );
