@@ -1,7 +1,10 @@
 module.exports.ENVIRONMENT_PRODUCTION = "production";
 module.exports.ENVIRONMENT_DEVELOPMENT = "develop";
+
 module.exports.MESSAGE_STATUS_TOBETREATED = "À traiter";
 module.exports.MESSAGE_SCHEDULED_MINUTES = 15;
+module.exports.MESSAGE_SCHEDULED_HOURS = 24;
+
 module.exports.CROSSKNOWLEDGE_STATUS_OK = "Y";
 module.exports.CROSSKNOWLEDGE_LANGUAGE = "fr-FR";
 module.exports.CROSSKNOWLEDGE_KONEXIO_ENTITY =

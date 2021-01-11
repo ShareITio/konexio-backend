@@ -1,35 +1,56 @@
 const { notifyError } = require("../awsServices");
 const { list } = require("../twilio");
-const { createMessage, fetchCandidates } = require("../airtableServices");
+const {
+  createMessage,
+  fetchCandidates,
+  fetchMessages,
+} = require("../airtableServices");
 const {
   MESSAGE_STATUS_TOBETREATED,
-  MESSAGE_SCHEDULED_MINUTES,
+  MESSAGE_SCHEDULED_HOURS,
   ENVIRONMENT_PRODUCTION,
 } = require("../constants");
 
-// Fonction permettant de récupérer les sms recu de ces 15 derniere minutes sur Twilio et de les envoyer sur airtable
-exports.putTwilioMessagesIntoAirtable = async (event, context) => {
+// Fonction permettant de récupérer et verifier le bon enregistrement des sms sms recu ces 24 derniere heures sur Twilio et de les envoyer sur airtable
+exports.bulkTwilioMessages = async (event, context) => {
   console.log(event, context);
   let messages;
   try {
     const eventTime = new Date(event.time);
     const options = {
       dateSentAfter: new Date(
-        eventTime - 1000 * (60 * MESSAGE_SCHEDULED_MINUTES)
+        eventTime - 1000 * 60 * 60 * MESSAGE_SCHEDULED_HOURS
       ),
       dateSentBefore: eventTime,
     };
 
     console.log("options :", options);
-    const [candidates, twilioList] = await Promise.all([
+    const [messageRecorded, candidates, twilioList] = await Promise.all([
+      // recuperation des messages de ces 24 dernieres heures
+      fetchMessages(
+        "IS_AFTER({Date et heure de réception}, DATEADD(NOW(), -24, 'hours')))"
+      ),
       // On récupere tous les candidats
       fetchCandidates(),
       // On récupère les sms de ces 15 dernieres minutes
       list(options),
     ]);
+
     console.log("Twilio messages :", twilioList);
 
-    messages = twilioList.filter(({ direction }) => direction === "inbound");
+    const savedMessages = twilioList
+      // seulement les messages entrants
+      .filter(({ direction }) => direction === "inbound")
+      // on compare la presence des messages sur leurs identifiant URI
+      .filter(({ uri: uri1 }) =>
+        messageRecorded.some(({ uri: uri2 }) => uri1 === uri2)
+      );
+    // on récupère la différence entre ce bien sauvé et l'ensemble sur twilio
+    const messages = twilioList.reduce(
+      (acc, mes) =>
+        savedMessages.some(({ uri }) => mes.uri === uri) ? acc : [...acc, mes],
+      []
+    );
 
     if (!messages || messages.length < 1) {
       console.log("No messages received");

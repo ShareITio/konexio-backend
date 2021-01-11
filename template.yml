@@ -114,6 +114,37 @@ Resources:
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
           PURPOSE: !Ref Purpose
 
+  # On créé à chaque fois 2 fonction pour chacun des env pour ne pas mélanger les variable denv
+  bulkTwilioMessages:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "bulkTwilioMessages_${Purpose}"
+      Description: "Fonction permettant de récupérer et verifier le bon enregistrement des sms sms recu ces 24 derniere heures sur Twilio et de les envoyer sur airtable."
+      Handler: handlers/put-twilio-messages-into-airtable.bulkTwilioMessages
+      Timeout: 30
+      CodeUri: src/
+      Layers:
+        - !Ref KonexioBackendDepLayer
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+            - sns:Publish
+            Resource: '*'
+      Environment:
+        Variables:
+          AIRTABLE_BASE: !Ref AirtableBase
+          AIRTABLE_API_KEY: !Ref AirtableApiKey
+          AIRTABLE_CANDIDATES_TABLE: !Ref AirtableCandidatesTable
+          AIRTABLE_MESSAGE_TABLE: !Ref AirtableMessagesTable
+          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          TWILIO_PHONE: !Ref TwilioPhone
+          # CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
+          # CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
+          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
+          PURPOSE: !Ref Purpose
+
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
@@ -215,6 +246,18 @@ Resources:
       FunctionName: !Ref putTwilioMessagesIntoAirtable
       FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
       Name: Staging
+      
+  bulkTwilioMessagesVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref bulkTwilioMessages
+      Description: Version déployé automatiquement
+  bulkTwilioMessagesAlias:
+    Type: AWS::Lambda::Alias
+    Properties:
+      FunctionName: !Ref bulkTwilioMessages
+      FunctionVersion: !GetAtt bulkTwilioMessagesVersion.Version
+      Name: Staging
 
  #
  # EVENTS
@@ -233,6 +276,24 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties: 
       FunctionName: !Ref putTwilioMessagesIntoAirtableAlias
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule.Arn
+      
+  ScheduledRule24hours:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "Schedule24hours_${Purpose}"
+      Description: Déclenché toutes les 24 heures
+      ScheduleExpression: "rate(24 hours)"
+      State: !If [IsProduction, "ENABLED", "DISABLED"]
+      Targets: 
+        - Arn: !Ref bulkTwilioMessagesAlias
+          Id: bulkTwilioMessagesAlias
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref bulkTwilioMessagesAlias
       Action: "lambda:InvokeFunction"
       Principal: "events.amazonaws.com"
       SourceArn: !GetAtt ScheduledRule.Arn

@@ -65,13 +65,14 @@ module.exports.makeSchema = (fields, makeGet) =>
  * @param {String} view La vue souhaité
  * @param {Object} schema Schema des données
  */
-module.exports.makeFetcher = (table, view, schema) => () => {
+module.exports.makeFetcher = (table, view, schema) => (filterByFormula) => {
   const accumulator = [];
   return new Promise((resolve, reject) =>
     base(table)
       .select({
         fields: getFields(schema),
         view,
+        filterByFormula,
       })
       .eachPage(
         (records, fetchNextPage) => {

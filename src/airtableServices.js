@@ -7,9 +7,19 @@ const schemaMessage = {
   status: "Statut du message",
   candidates: "Candidatures apprenants liées au numéro",
   dateReceived: "Date et heure de réception",
+  uri: "URI",
 };
 module.exports.createMessage = makeCreate(
   process.env.AIRTABLE_MESSAGE_TABLE,
+  makeSchema(schemaMessage, (name) =>
+    schemaMessage.dateSent === name || schemaMessage.dateReceived === name
+      ? (data) => data.toISOString()
+      : (data) => data
+  )
+);
+module.exports.fetchMessages = makeFetcher(
+  process.env.AIRTABLE_MESSAGE_TABLE,
+  "Tous les messages",
   makeSchema(schemaMessage, (name) =>
     schemaMessage.dateSent === name || schemaMessage.dateReceived === name
       ? (data) => data.toISOString()
