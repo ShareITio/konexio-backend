@@ -9,20 +9,19 @@ const dataSchemaMessage = {
   dateReceived: "Date et heure de réception",
   sid: "SID",
 };
-const schemaMessage = makeSchema(dataSchemaMessage, (name) =>
-  dataSchemaMessage.dateReceived === name
-    ? (data) => data.toISOString()
-    : (data) => data
-);
 
 module.exports.createMessage = makeCreate(
   process.env.AIRTABLE_MESSAGE_TABLE,
-  schemaMessage
+  makeSchema(dataSchemaMessage, (name) =>
+    dataSchemaMessage.dateReceived === name
+      ? (data) => data.toISOString()
+      : (data) => data
+  )
 );
 module.exports.fetchMessages = makeFetcher(
   process.env.AIRTABLE_MESSAGE_TABLE,
   "Tous les messages",
-  schemaMessage
+  makeSchema(dataSchemaMessage, (name) => (data) => data.get(name))
 );
 
 const dataSchemaCandidate = {

@@ -66,6 +66,9 @@ module.exports.makeSchema = (fields, makeGet) =>
  * @param {Object} schema Schema des données
  */
 module.exports.makeFetcher = (table, view, schema) => (options = {}) => {
+  // Si vous vous retrouvez avec une erreur de type :
+  // "TypeError: Cannot read property 'offset' of undefined",
+  // Votre schema est sans doute erroné
   const accumulator = [];
   return new Promise((resolve, reject) =>
     base(table)
