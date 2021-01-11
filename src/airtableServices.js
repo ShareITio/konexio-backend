@@ -9,7 +9,7 @@ const dataSchemaMessage = {
   dateReceived: "Date et heure de réception",
   sid: "SID",
 };
-
+module.exports.dataSchemaMessage = dataSchemaMessage;
 module.exports.createMessage = makeCreate(
   process.env.AIRTABLE_MESSAGE_TABLE,
   makeSchema(dataSchemaMessage, (name) =>
@@ -28,6 +28,7 @@ const dataSchemaCandidate = {
   phone: "Téléphone",
   messageReceived: "Messages reçus",
 };
+module.exports.dataSchemaCandidate = dataSchemaCandidate;
 module.exports.fetchCandidates = makeFetcher(
   process.env.AIRTABLE_CANDIDATES_TABLE,
   "Master view",

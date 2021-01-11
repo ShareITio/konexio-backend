@@ -215,9 +215,9 @@ Resources:
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
           PURPOSE: !Ref Purpose
 
- #
- # VERSIONS
- #
+  #
+  # VERSIONS
+  #
   putTwilioMessagesIntoAirtableVersion:
     Type: AWS::Lambda::Version
     Properties:
@@ -242,9 +242,9 @@ Resources:
       FunctionVersion: !GetAtt bulkTwilioMessagesVersion.Version
       Name: Staging
 
- #
- # EVENTS
- #
+  #
+  # EVENTS
+  #
   ScheduledRule:
     Type: AWS::Events::Rule
     Properties:
