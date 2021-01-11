@@ -27,6 +27,7 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
       // On récupère les sms de ces 15 derniere minutes
       list(options),
     ]);
+    console.log("Twilio messages :", twilioList);
     messages = twilioList.filter(({ direction }) => direction === "inbound");
 
     if (!messages || messages.length < 1) {
@@ -34,7 +35,7 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
       return `No new record created/received.`;
     }
 
-    console.log("Candidates :", candidates);
+    // console.log("Candidates :", candidates);
 
     console.log("Message received :", messages);
 
@@ -65,10 +66,11 @@ exports.putTwilioMessagesIntoAirtable = async (event, context) => {
   } catch (err) {
     console.error(err);
     if (process.env.PURPOSE === ENVIRONMENT_PRODUCTION) {
-      return notifyError(err, event, context, {
+      await notifyError(err, event, context, {
         reason: "Voici les SMS que la fonction n'a pas pu enregistrer.",
         data: messages,
       });
     }
+    throw err;
   }
 };

@@ -228,11 +228,11 @@ Resources:
       State: !If [IsProduction, "ENABLED", "DISABLED"]
       Targets: 
         - Arn: !Ref putTwilioMessagesIntoAirtableAlias
-          Id: putTwilioMessagesIntoAirtable
+          Id: putTwilioMessagesIntoAirtableAlias
   PermissionForEventsToInvokeLambda: 
     Type: AWS::Lambda::Permission
     Properties: 
-      FunctionName: !Ref putTwilioMessagesIntoAirtable
+      FunctionName: !Ref putTwilioMessagesIntoAirtableAlias
       Action: "lambda:InvokeFunction"
       Principal: "events.amazonaws.com"
       SourceArn: !GetAtt ScheduledRule.Arn
