@@ -7,6 +7,7 @@ const dataSchemaMessage = {
   status: "Statut du message",
   candidates: "Candidatures apprenants liées au numéro",
   dateReceived: "Date et heure de réception",
+  dateSaved: "Date et enregistrement dans Airtable",
   sid: "SID",
 };
 module.exports.dataSchemaMessage = dataSchemaMessage;
