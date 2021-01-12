@@ -2,7 +2,7 @@ const AWS = require("aws-sdk");
 
 AWS.config.update({ region: "eu-west-3" });
 const SNS = new AWS.SNS();
-
+const region = "eu-west-3";
 module.exports.notifyError = (error, event, context, ...extra) => {
   const date = new Date();
 
@@ -18,8 +18,8 @@ module.exports.notifyError = (error, event, context, ...extra) => {
     `Nom de la fonction : "${context.functionName}"\n\n` +
     `Date et heure de l'erreur : "${datestring}"\n\n` +
     `Message de l'erreur : "${error}"\n\n` +
-    `Lien du log de la fonction : https://${context.region}.console.aws.amazon.com/lambda/home?region=${context.region}#/functions/${context.functionName}?tab=monitor\n\n` +
-    `Lien de désactivation de la Lambda: https://${context.region}.console.aws.amazon.com/lambda/home?region=${context.region}#/functions/${context.functionName}/aliases/live?tab=configure\n\n` +
+    `Lien du log de la fonction : https://${region}.console.aws.amazon.com/lambda/home?region=${region}#/functions/${context.functionName}?tab=monitor\n\n` +
+    `Lien de désactivation de la Lambda: https://${region}.console.aws.amazon.com/lambda/home?region=${region}#/functions/${context.functionName}/aliases/live?tab=configure\n\n` +
     `Informations complémentaires: ${JSON.stringify(
       { error, event, context, extra },
       null,
