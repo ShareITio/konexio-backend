@@ -29,7 +29,7 @@ exports.bulkTwilioMessages = async (event, context) => {
     const [messageAirtable, candidates, messageTwilio] = await Promise.all([
       // recuperation des messages de ces 24 dernieres heures
       fetchMessages({
-        filterByFormula: `IS_AFTER({${dataSchemaMessage.dateReceived}}, DATEADD(NOW(), -${MESSAGE_SCHEDULED_HOURS}, 'hours'))`,
+        filterByFormula: `DATETIME_DIFF(NOW(), {${dataSchemaMessage.dateSaved}}, 'hours') < ${MESSAGE_SCHEDULED_HOURS}`,
       }),
       // On récupere tous les candidats
       fetchCandidates(),
@@ -37,7 +37,8 @@ exports.bulkTwilioMessages = async (event, context) => {
       list(options),
     ]);
 
-    console.log("Twilio messages :", messageTwilio);
+    console.log("messageTwilio :", messageTwilio);
+    console.log("messageAirtable :", messageAirtable);
 
     const savedMessages = messageTwilio
       // seulement les messages entrants
@@ -59,11 +60,11 @@ exports.bulkTwilioMessages = async (event, context) => {
       return `No new record created/received.`;
     }
 
-    console.log("Message received :", messages);
+    console.log("Message to write :", messages);
 
     // Envoie les sms vers Airtable
     await Promise.all(
-      messages.map(({ from, body, dateSent }) => {
+      messages.map(({ from, body, dateSent, sid }) => {
         // Recherche des Candidats ayant envoyé le sms (en fonction du numéro de téléphone)
         const relatedCandidates = candidates
           .filter(({ phone }) => phone === from)
@@ -79,6 +80,7 @@ exports.bulkTwilioMessages = async (event, context) => {
           to: process.env.TWILIO_PHONE,
           candidates: relatedCandidates,
           dateReceived: dateSent,
+          sid,
         });
       })
     );
