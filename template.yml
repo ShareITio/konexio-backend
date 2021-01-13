@@ -125,7 +125,7 @@ Resources:
       AutoPublishAlias: live
       DeploymentPreference:
         Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
-      events:
+      Events:
         - ScheduledRule:
           Type: Schedule
           Properties:
