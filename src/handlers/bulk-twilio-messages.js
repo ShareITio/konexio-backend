@@ -29,6 +29,11 @@ exports.bulkTwilioMessages = async (event, context) => {
     };
 
     console.log("options :", options);
+    console.log(
+      `DATETIME_DIFF('${eventTime.toISOString()}', {${
+        dataSchemaMessage.dateReceived
+      }}, 'hours') < ${messageScheduledHours}`
+    );
     const [messageAirtable, candidates, messageTwilio] = await Promise.all([
       // recuperation des messages de ces 24 dernieres heures
       fetchMessages({
@@ -42,19 +47,21 @@ exports.bulkTwilioMessages = async (event, context) => {
       list(options),
     ]);
 
-    console.log("messageTwilio :", messageTwilio);
+    // seulement les messages entrants
+    const inboundMessagesTwilio = messageTwilio.filter(
+      ({ direction }) => direction === "inbound"
+    );
+
+    console.log("messageTwilio :", inboundMessagesTwilio);
     console.log("messageAirtable :", messageAirtable);
 
-    const savedMessages = messageTwilio
-      // seulement les messages entrants
-      .filter(({ direction }) => direction === "inbound")
-      // on compare la presence des messages sur leurs identifiant SID
-      .filter(({ sid: sid1 }) =>
-        messageAirtable.some(({ sid: sid2 }) => sid1 === sid2)
-      );
+    // on compare la presence des messages sur leurs identifiant SID
+    const savedMessages = inboundMessagesTwilio.filter(({ sid: sid1 }) =>
+      messageAirtable.some(({ sid: sid2 }) => sid1 === sid2)
+    );
 
     // on récupère la différence entre ce bien sauvé et l'ensemble sur twilio
-    const messages = messageTwilio.reduce(
+    const messages = inboundMessagesTwilio.reduce(
       (acc, mes) =>
         savedMessages.some(({ sid }) => mes.sid === sid) ? acc : [...acc, mes],
       []
@@ -66,7 +73,6 @@ exports.bulkTwilioMessages = async (event, context) => {
     }
 
     console.log("Message to write :", messages);
-
     // Envoie les sms vers Airtable
     await Promise.all(
       messages.map(({ from, body, dateSent, sid }) => {
