@@ -243,17 +243,17 @@ Resources:
       FunctionVersion: !GetAtt putTwilioMessagesIntoAirtableVersion.Version
       Name: Staging
       
-  bulkTwilioMessagesVersion:
-    Type: AWS::Lambda::Version
-    Properties:
-      FunctionName: !Ref bulkTwilioMessages
-      Description: Version déployé automatiquement
-  bulkTwilioMessagesAlias:
-    Type: AWS::Lambda::Alias
-    Properties:
-      FunctionName: !Ref bulkTwilioMessages
-      FunctionVersion: !GetAtt bulkTwilioMessagesVersion.Version
-      Name: Staging
+  # bulkTwilioMessagesVersion:
+  #   Type: AWS::Lambda::Version
+  #   Properties:
+  #     FunctionName: !Ref bulkTwilioMessages
+  #     Description: Version déployé automatiquement
+  # bulkTwilioMessagesAlias:
+  #   Type: AWS::Lambda::Alias
+  #   Properties:
+  #     FunctionName: !Ref bulkTwilioMessages
+  #     FunctionVersion: !GetAtt bulkTwilioMessagesVersion.Version
+  #     Name: Staging
 
   #
   # EVENTS
