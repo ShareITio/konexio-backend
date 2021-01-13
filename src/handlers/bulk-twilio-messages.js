@@ -29,7 +29,7 @@ exports.bulkTwilioMessages = async (event, context) => {
     const [messageAirtable, candidates, messageTwilio] = await Promise.all([
       // recuperation des messages de ces 24 dernieres heures
       fetchMessages({
-        filterByFormula: `DATETIME_DIFF(NOW(), {${dataSchemaMessage.dateSaved}}, 'hours') < ${MESSAGE_SCHEDULED_HOURS}`,
+        filterByFormula: `DATETIME_DIFF(NOW(), {${dataSchemaMessage.dateReceived}}, 'hours') < ${MESSAGE_SCHEDULED_HOURS}`,
       }),
       // On récupere tous les candidats
       fetchCandidates(),
