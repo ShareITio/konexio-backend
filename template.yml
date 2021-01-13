@@ -130,7 +130,7 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: "rate(15 minutes)"
-            Name: !Sub "Schedule15minutes_${Purpose}"
+            # Name: !Sub "Schedule15minutes_${Purpose}"
             Description: Déclenché toutes les 15 minutes
             Enabled: !If [IsProduction, true, false]
             Input: "{'hours': '2'}"
