@@ -134,7 +134,7 @@ Resources:
             Description: Déclenché toutes les 15 minutes
             Enabled: !If [IsProduction, true, false]
             Input:
-              hours: 2
+              hours: '2'
       Layers:
         - !Ref KonexioBackendDepLayer
       Policies:
