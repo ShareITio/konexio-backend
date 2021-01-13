@@ -58,6 +58,8 @@ Parameters:
   DefaultLayerArn:
     Type: String
     Default: arn:aws:lambda:eu-west-3:452969718563:layer:konexio-backend-dependencies:132
+  MessageScheduledHours:
+    Type: String
 
 Conditions:
   IsProduction: !Equals [!Ref Purpose, production]
@@ -153,6 +155,7 @@ Resources:
           TWILIO_PHONE: !Ref TwilioPhone
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
           PURPOSE: !Ref Purpose
+          MESSAGE_SCHEDULED_HOURS: !Ref MessageScheduledHours
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:

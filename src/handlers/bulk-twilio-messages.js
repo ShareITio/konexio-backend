@@ -12,6 +12,9 @@ const {
   ENVIRONMENT_PRODUCTION,
 } = require("../constants");
 
+const messageScheduledHours =
+  process.env.MESSAGE_SCHEDULED_HOURS || MESSAGE_SCHEDULED_HOURS;
+
 // Fonction permettant de récupérer et verifier le bon enregistrement des sms sms recu ces 24 derniere heures sur Twilio et de les envoyer sur airtable
 exports.bulkTwilioMessages = async (event, context) => {
   console.log(event, context);
@@ -20,7 +23,7 @@ exports.bulkTwilioMessages = async (event, context) => {
     const eventTime = new Date(event.time);
     const options = {
       dateSentAfter: new Date(
-        eventTime - 1000 * 60 * 60 * MESSAGE_SCHEDULED_HOURS
+        eventTime - 1000 * 60 * 60 * messageScheduledHours
       ),
       dateSentBefore: eventTime,
     };
@@ -29,9 +32,9 @@ exports.bulkTwilioMessages = async (event, context) => {
     const [messageAirtable, candidates, messageTwilio] = await Promise.all([
       // recuperation des messages de ces 24 dernieres heures
       fetchMessages({
-        filterByFormula: `DATETIME_DIFF(${eventTime.toISOString()}, {${
+        filterByFormula: `DATETIME_DIFF('${eventTime.toISOString()}', {${
           dataSchemaMessage.dateReceived
-        }}, 'hours') < ${MESSAGE_SCHEDULED_HOURS}`,
+        }}, 'hours') < ${messageScheduledHours}`,
       }),
       // On récupere tous les candidats
       fetchCandidates(),
