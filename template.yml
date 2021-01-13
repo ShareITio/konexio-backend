@@ -122,6 +122,19 @@ Resources:
       Timeout: 30
       MemorySize: 256
       CodeUri: src/
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
+      events:
+        - ScheduledRule:
+          Type: Schedule
+          Properties:
+            Schedule: "rate(15 minutes)"
+            Name: !Sub "Schedule15minutes_${Purpose}"
+            Description: Déclenché toutes les 15 minutes
+            Enabled: !If [IsProduction, true, false]
+            Input:
+              hours: 2
       Layers:
         - !Ref KonexioBackendDepLayer
       Policies:
@@ -245,24 +258,24 @@ Resources:
   #
   # EVENTS
   #
-  ScheduledRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Name: !Sub "Schedule15minutes_${Purpose}"
-      Description: Déclenché toutes les 15 minutes
-      ScheduleExpression: "rate(15 minutes)"
-      # State: !If [IsProduction, "ENABLED", "DISABLED"]
-      State: "ENABLED"
-      Targets: 
-        - Arn: !Ref bulkTwilioMessagesAlias
-          Id: bulkTwilioMessages
-  PermissionForEventsToInvokeLambda:
-    Type: AWS::Lambda::Permission
-    Properties: 
-      FunctionName: !Ref bulkTwilioMessagesAlias
-      Action: "lambda:InvokeFunction"
-      Principal: "events.amazonaws.com"
-      SourceArn: !GetAtt ScheduledRule.Arn
+  # ScheduledRule:
+  #   Type: AWS::Events::Rule
+  #   Properties:
+  #     Name: !Sub "Schedule15minutes_${Purpose}"
+  #     Description: Déclenché toutes les 15 minutes
+  #     ScheduleExpression: "rate(15 minutes)"
+  #     # State: !If [IsProduction, "ENABLED", "DISABLED"]
+  #     State: "ENABLED"
+  #     Targets: 
+  #       - Arn: !Ref bulkTwilioMessagesAlias
+  #         Id: bulkTwilioMessages
+  # PermissionForEventsToInvokeLambda:
+  #   Type: AWS::Lambda::Permission
+  #   Properties: 
+  #     FunctionName: !Ref bulkTwilioMessagesAlias
+  #     Action: "lambda:InvokeFunction"
+  #     Principal: "events.amazonaws.com"
+  #     SourceArn: !GetAtt ScheduledRule.Arn
       
   # ScheduledRule24hours:
   #   Type: AWS::Events::Rule
