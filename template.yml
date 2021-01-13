@@ -126,7 +126,7 @@ Resources:
       DeploymentPreference:
         Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
       Events:
-        ScheduledRule:
+        ScheduledRule15:
           Type: Schedule
           Properties:
             Schedule: "rate(15 minutes)"
