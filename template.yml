@@ -119,7 +119,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "bulkTwilioMessages_${Purpose}"
-      Description: "Récupére et verifie le bon enregistrement des sms sms recu ces 24 derniere heures sur Twilio et de les envoyer sur airtable."
+      Description: "Récupére et verifie le bon enregistrement des sms recu ces 2 derniere heures toutes les 15minutes sur Twilio et de les envoyer sur airtable."
       Handler: handlers/bulk-twilio-messages.bulkTwilioMessages
       Timeout: 30
       MemorySize: 256
@@ -132,7 +132,6 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: "rate(15 minutes)"
-            # Name: !Sub "Schedule15minutes_${Purpose}"
             Description: Déclenché toutes les 15 minutes
             Enabled: !If [IsProduction, true, false]
       Layers:
@@ -155,6 +154,96 @@ Resources:
           ERROR_TOPIC_ARN: !Ref ErrorTopicArn
           PURPOSE: !Ref Purpose
           MESSAGE_SCHEDULED_HOURS: !Ref MessageScheduledHours
+
+  # On créé à chaque fois 2 fonction pour chacun des env pour ne pas mélanger les variable denv
+  bulkTwilioMessages24:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "bulkTwilioMessages24_${Purpose}"
+      Description: "Récupére et verifie le bon enregistrement des sms recu ces 24 derniere heures sur Twilio et de les envoyer sur airtable."
+      Handler: handlers/bulk-twilio-messages.bulkTwilioMessages
+      Timeout: 30
+      MemorySize: 256
+      CodeUri: src/
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
+      Events:
+        ScheduledRule15:
+          Type: Schedule
+          Properties:
+            Schedule: "rate(24 hours)"
+            Description: Déclenché toutes les 24 heures
+            Enabled: !Ref IsProduction
+      Layers:
+        - !Ref KonexioBackendDepLayer
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+            - sns:Publish
+            Resource: '*'
+      Environment:
+        Variables:
+          AIRTABLE_BASE: !Ref AirtableBase
+          AIRTABLE_API_KEY: !Ref AirtableApiKey
+          AIRTABLE_CANDIDATES_TABLE: !Ref AirtableCandidatesTable
+          AIRTABLE_MESSAGE_TABLE: !Ref AirtableMessagesTable
+          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          TWILIO_PHONE: !Ref TwilioPhone
+          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
+          PURPOSE: !Ref Purpose
+          MESSAGE_SCHEDULED_HOURS: 24
+
+  # On créé à chaque fois 2 fonction pour chacun des env pour ne pas mélanger les variable denv
+  coda:
+    Type: AWS::Serverless::Function
+    Condition: IsNotProduction
+    Properties:
+      FunctionName: !Sub "coda_${Purpose}"
+      Description: ""
+      Handler: handlers/coda.handler
+      CodeUri: src/
+      # AutoPublishAlias: live
+      # DeploymentPreference:
+      #   Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
+      # Events:
+      #   ScheduledRule15:
+      #     Type: Schedule
+      #     Properties:
+      #       Schedule: "rate(24 hours)"
+      #       Description: Déclenché toutes les 15 minutes
+      #       Enabled: !If [IsProduction, true, false]
+      #   ApiEvent:
+      #     Type: Api
+      #     Properties:
+      #       Method: POST
+      #       Path: /crossknowledge/learners
+      #       RestApiId: !Ref ApiGateway
+      #       Auth:
+      #         ApiKeyRequired: true
+      Layers:
+        - !Ref KonexioBackendDepLayer
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+            - sns:Publish
+            Resource: '*'
+      Environment:
+        Variables:
+          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
+          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
+          AIRTABLE_BASE: !Ref AirtableBase
+          AIRTABLE_API_KEY: !Ref AirtableApiKey
+          AIRTABLE_CANDIDATES_TABLE: !Ref AirtableCandidatesTable
+          AIRTABLE_MESSAGE_TABLE: !Ref AirtableMessagesTable
+          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          TWILIO_PHONE: !Ref TwilioPhone
+          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
+          PURPOSE: !Ref Purpose
 
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
