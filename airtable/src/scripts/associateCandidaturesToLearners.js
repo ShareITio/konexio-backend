@@ -126,11 +126,8 @@ async () => {
           candidat.email,
         ].reduce((acc, { length }) => acc + length, 0);
 
-        console.log("---");
-        console.log("base ", base);
-        console.log("distance ", distance);
-        console.log("res", (base - distance) / base);
-        console.log(apprenant);
+        console.log("res: ", (100 * (base - distance)) / base);
+        console.log("apprenant: ", apprenant);
 
         // si correspondant à plus de 60%
         return (base - distance) / base > 0.6;
@@ -162,6 +159,7 @@ async () => {
             view.records[i],
             apprenantSourceRecord
           );
+          // todo si record selectionner l'associer champs "Fiche apprenants"
         } else {
           output.text("Woof");
         }
