@@ -85,7 +85,7 @@ async () => {
     email: record.getCellValue(config.candidaturesASEmail),
     phone: record.getCellValue(config.candidaturesASPhone),
   }));
-  console.log("dataNouvelleAll:", dataNouvelleAll);
+  output.markdown("✅ Vue des nouvelles candidatures DigitAll chargée.");
 
   // recuperation apprenants
   const {
@@ -98,46 +98,67 @@ async () => {
     email: record.getCellValue(config.apprenantsEmail),
     phone: record.getCellValue(config.apprenantsPhone),
   }));
-  console.log("dataApprenants: ", dataApprenants);
+  output.markdown("✅ Vue des nouvelles apprenants chargée.");
+
   const views = [{ records: recordsAll, data: dataNouvelleAll }];
   for (const j in views) {
     const view = views[j];
 
     for (const i in view.data) {
       const candidat = view.data[i];
+      output.markdown("---");
 
-      output.text("Voici le candidat à comparer");
-      output.inspect(candidat);
+      output.text("Voici le candidat à comparer: ");
+      output.table(candidat);
 
       // compare apprenant/candidature
       const apprenantResult = dataApprenants.map((apprenant) => {
         // todo: compare each fields and return distance percent
+        // passé si la candidature a deja été liée à cet apprenant
         const distance = [
-          new Levenshtein(candidat.lastName, apprenant.lastName),
-          new Levenshtein(candidat.firstName, apprenant.firstName),
-          new Levenshtein(candidat.phone, apprenant.phone),
-          new Levenshtein(candidat.email, apprenant.email),
+          candidat.lastName && apprenant.lastName
+            ? new Levenshtein(candidat.lastName, apprenant.lastName)
+            : { distance: 0 },
+          candidat.firstName && apprenant.firstName
+            ? new Levenshtein(candidat.firstName, apprenant.firstName)
+            : { distance: 0 },
+          candidat.email && apprenant.email
+            ? new Levenshtein(candidat.email, apprenant.email)
+            : { distance: 0 },
+          candidat.phone && apprenant.phone
+            ? new Levenshtein(candidat.phone, apprenant.phone)
+            : { distance: 0 },
         ].reduce((acc, { distance }) => acc + distance, 0);
 
         const base = [
-          candidat.lastName,
-          candidat.firstName,
-          candidat.phone,
-          candidat.email,
+          candidat.lastName && apprenant.lastName
+            ? candidat.lastName
+            : { length: 0 },
+          candidat.firstName && apprenant.firstName
+            ? candidat.firstName
+            : { length: 0 },
+          candidat.phone && apprenant.phone ? candidat.phone : { length: 0 },
+          candidat.email && apprenant.email ? candidat.email : { length: 0 },
         ].reduce((acc, { length }) => acc + length, 0);
 
-        console.log("res: ", (100 * (base - distance)) / base);
-        console.log("apprenant: ", apprenant);
+        const rate = (base - distance) / base;
+        const extension =
+          rate > 0.8 ? " 🤩" : rate > 0.8 ? " 😎" : rate > 0.6 ? " 🤔" : "";
+        output.markdown(
+          `\`\`\`${apprenant.id}\`\`\` similaire à : ${
+            100 * rate
+          } %${extension}`
+        );
 
         // si correspondant à plus de 60%
-        return (base - distance) / base > 0.6;
+        return rate > 0.6;
       });
 
       const apprenantResultFilterd = apprenantResult
         .map((value, i) => (value ? dataApprenants[i] : undefined))
         .filter((value) => value);
 
-      if (apprenantResultFilterd.length < 1) {
+      if (!apprenantResultFilterd || apprenantResultFilterd.length < 1) {
         output.text("Aucune similarité pour ce champs");
       } else {
         output.text("Voici les résultats : ");
@@ -154,14 +175,12 @@ async () => {
               .filter((value) => value)
           );
 
-          console.log(
-            "On associe les records",
-            view.records[i],
-            apprenantSourceRecord
-          );
+          output.inspect(view.records[i]);
+          output.inspect(apprenantSourceRecord);
+          output.text("✅ La candidature a été associée à son apprenant.");
           // todo si record selectionner l'associer champs "Fiche apprenants"
         } else {
-          output.text("Woof");
+          output.text("☑ On passe au suivant");
         }
       }
     }
