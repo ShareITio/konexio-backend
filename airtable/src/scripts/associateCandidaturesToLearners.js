@@ -1,5 +1,4 @@
 const Levenshtein = require("levenshtein");
-
 async () => {
   // Créer des comptes apprenants Crossknowledge
 
@@ -125,11 +124,16 @@ async () => {
           candidat.firstName,
           candidat.phone,
           candidat.email,
-        ].reduce((acc, { distance }) => acc + distance, 0);
+        ].reduce((acc, { length }) => acc + length, 0);
 
-        console.log((base - distance) / 100, apprenant);
+        console.log("---");
+        console.log("base ", base);
+        console.log("distance ", distance);
+        console.log("res", (base - distance) / base);
+        console.log(apprenant);
 
-        return (base - distance) / 100 > 0.06;
+        // si correspondant à plus de 60%
+        return (base - distance) / base > 0.6;
       });
 
       const apprenantResultFilterd = apprenantResult
