@@ -41,9 +41,11 @@ async () => {
         label: "Champs téléphone des apprenants",
         parentTable: "apprenantsTable",
       }),
-
       input.config.table("candidaturesASTable", {
-        label: "Table des candidatures digit...",
+        label: "Table des candidatures digitAll & digitStart",
+      }),
+      input.config.table("candidaturesASTableDigitTous", {
+        label: "Table des candidatures digitTous",
       }),
       input.config.view("nouvelleAllView", {
         label: "Vue des candidatures digitAll",
@@ -52,6 +54,10 @@ async () => {
       input.config.view("nouvelleStartView", {
         label: "Vue des candidatures digitStart",
         parentTable: "candidaturesASTable",
+      }),
+      input.config.view("nouvelleTousView", {
+        label: "Vue des candidatures digitTous",
+        parentTable: "candidaturesASTableDigitTous",
       }),
       input.config.field("candidaturesASEmail", {
         label: "Champs email des candidatures",
@@ -68,6 +74,22 @@ async () => {
       input.config.field("candidaturesASPhone", {
         label: "Champs téléphone des candidatures",
         parentTable: "candidaturesASTable",
+      }),
+      input.config.field("candidaturesASEmailDigiTous", {
+        label: "Champs email des candidatures DigiTous",
+        parentTable: "candidaturesASTableDigitTous",
+      }),
+      input.config.field("candidaturesASFirstnameDigiTous", {
+        label: "Champs prénom des candidatures DigiTous",
+        parentTable: "candidaturesASTableDigitTous",
+      }),
+      input.config.field("candidaturesASLastnameDigiTous", {
+        label: "Champs nom des candidatures DigiTous",
+        parentTable: "candidaturesASTableDigitTous",
+      }),
+      input.config.field("candidaturesASPhoneDigiTous", {
+        label: "Champs téléphone des candidatures DigiTous",
+        parentTable: "candidaturesASTableDigitTous",
       }),
     ],
   });
