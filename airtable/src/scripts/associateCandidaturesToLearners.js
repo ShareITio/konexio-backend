@@ -14,6 +14,7 @@ async () => {
 
   const config = input.config({
     title: "Configuration du lien candidatures/apprenants",
+    // todo mettre à jour la description
     description:
       "TODO: Ce script permet de créer de nouveaux apprenants dans CrossKnowledge. Les paramètres ci-dessous servent à trouver les informations requises à la bonne exécution du script (Il n'est pas nécessaire d'y toucher).",
     items: [
@@ -75,12 +76,13 @@ async () => {
   output.markdown("### Association candidatures apprenants");
 
   // initialisation
-
+  // todo: ajouter une jolie description
+  // recuperer les données de digitous et digitStart
   // recuperation nouvelle digitall
   const {
-    records: recordsAll,
+    records: digitAllRecords,
   } = await config.nouvelleAllView.selectRecordsAsync();
-  const dataNouvelleAll = recordsAll.map((record) => ({
+  const digitAllData = digitAllRecords.map((record) => ({
     lastName: record.getCellValue(config.candidaturesASLastname),
     firstName: record.getCellValue(config.candidaturesASFirstname),
     email: record.getCellValue(config.candidaturesASEmail),
@@ -90,9 +92,9 @@ async () => {
 
   // recuperation apprenants
   const {
-    records: recordsApprenants,
+    records: learnersRecord,
   } = await config.apprenantsView.selectRecordsAsync();
-  const dataApprenants = recordsApprenants.map((record) => ({
+  const learnersData = learnersRecord.map((record) => ({
     id: record.id,
     lastName: record.getCellValue(config.apprenantsLastname),
     firstName: record.getCellValue(config.apprenantsFirstname),
@@ -101,89 +103,96 @@ async () => {
   }));
   output.markdown("✅ Vue des nouvelles apprenants chargée.");
 
-  const views = [{ records: recordsAll, data: dataNouvelleAll }];
+  // todo afficher le nombre de candidatures à lier
+
+  const views = [{ records: digitAllRecords, data: digitAllData }];
   for (const j in views) {
     const view = views[j];
+    scenarioSearchDuplicates(view, learnersData, learnersRecord)
+  };
+}
 
-    for (const i in view.data) {
-      const candidat = view.data[i];
-      output.markdown("---");
+function scenarioSearchDuplicates(view, learnersData, learnersRecord) {
+  for (const i in view.data) {
+    const applicantData = view.data[i];
+    output.markdown("---");
 
-      output.text("Voici le candidat à comparer: ");
-      output.table(candidat);
+    output.text("Voici le candidat à comparer: ");
+    output.table(applicantData);
 
-      // compare apprenant/candidature
-      const apprenantResult = dataApprenants.map((apprenant) => {
-        // todo: compare each fields and return distance percent
-        // passé si la candidature a deja été liée à cet apprenant
-        const distance = [
-          candidat.lastName && apprenant.lastName
-            ? new Levenshtein(candidat.lastName, apprenant.lastName)
-            : { distance: 0 },
-          candidat.firstName && apprenant.firstName
-            ? new Levenshtein(candidat.firstName, apprenant.firstName)
-            : { distance: 0 },
-          candidat.email && apprenant.email
-            ? new Levenshtein(candidat.email, apprenant.email)
-            : { distance: 0 },
-          candidat.phone && apprenant.phone
-            ? new Levenshtein(candidat.phone, apprenant.phone)
-            : { distance: 0 },
-        ].reduce((acc, { distance }) => acc + distance, 0);
+    // compare apprenant/candidature
+    const learnersOK = learnersData.map((apprenant) => {
+      // todo: compare each fields and return distance percent
+      // todo: passé si la candidature a deja été liée à cet apprenant
+      // todo: concatener nom+prenom et choisir le plus petit dans le calcul de distance avec leurs inversion
+      const distance = [
+        applicantData.lastName && apprenant.lastName
+          ? new Levenshtein(applicantData.lastName, apprenant.lastName)
+          : { distance: 0 },
+        applicantData.firstName && apprenant.firstName
+          ? new Levenshtein(applicantData.firstName, apprenant.firstName)
+          : { distance: 0 },
+        applicantData.email && apprenant.email
+          ? new Levenshtein(applicantData.email, apprenant.email)
+          : { distance: 0 },
+        applicantData.phone && apprenant.phone
+          ? new Levenshtein(applicantData.phone, apprenant.phone)
+          : { distance: 0 },
+      ].reduce((acc, { distance }) => acc + distance, 0);
 
-        const base = [
-          candidat.lastName && apprenant.lastName
-            ? candidat.lastName
-            : { length: 0 },
-          candidat.firstName && apprenant.firstName
-            ? candidat.firstName
-            : { length: 0 },
-          candidat.phone && apprenant.phone ? candidat.phone : { length: 0 },
-          candidat.email && apprenant.email ? candidat.email : { length: 0 },
-        ].reduce((acc, { length }) => acc + length, 0);
+      const base = [
+        applicantData.lastName && apprenant.lastName
+          ? applicantData.lastName
+          : { length: 0 },
+        applicantData.firstName && apprenant.firstName
+          ? applicantData.firstName
+          : { length: 0 },
+        applicantData.phone && apprenant.phone ? applicantData.phone : { length: 0 },
+        applicantData.email && apprenant.email ? applicantData.email : { length: 0 },
+      ].reduce((acc, { length }) => acc + length, 0);
 
-        const rate = (base - distance) / base;
-        const extension =
-          rate > 0.8 ? " 🤩" : rate > 0.7 ? " 😎" : rate > 0.6 ? " 🤔" : "";
-        output.markdown(
-          `\`\`\`${apprenant.id}\`\`\` similaire à : ${
-            100 * rate
-          } %${extension}`
+      const rate = (base - distance) / base;
+      const extension =
+        rate > 0.8 ? " 🤩" : rate > 0.7 ? " 😎" : rate > 0.6 ? " 🤔" : "";
+      output.markdown(
+        `\`\`\`${apprenant.id}\`\`\` similaire à : ${
+          100 * rate
+        } %${extension}`
+      );
+
+      // si correspondant à plus de 60%
+      return rate > 0.6;
+    });
+
+    const learnersDataFiltred = learnersOK
+      .map((value, i) => (value ? learnersData[i] : undefined))
+      .filter((value) => value);
+
+    if (!learnersDataFiltred || learnersDataFiltred.length < 1) {
+      output.text("☑ Aucune similarité pour ce champs");
+    } else {
+      // todo: afficher le pourcentage de similarité
+      output.text("Voici les résultats : ");
+      output.table(learnersDataFiltred);
+      let response = await input.buttonsAsync(
+        "Souhaitez vous lier ce champ ?",
+        ["Oui", "Non"]
+      );
+      if (response === "Oui") {
+        const apprenantSourceRecord = await input.recordAsync(
+          "Veuillez sélectionner un enregistrement :",
+          learnersOK
+            .map((value, i) => (value ? learnersRecord[i] : undefined))
+            .filter((value) => value)
         );
 
-        // si correspondant à plus de 60%
-        return rate > 0.625;
-      });
-
-      const apprenantResultFilterd = apprenantResult
-        .map((value, i) => (value ? dataApprenants[i] : undefined))
-        .filter((value) => value);
-
-      if (!apprenantResultFilterd || apprenantResultFilterd.length < 1) {
-        output.text("Aucune similarité pour ce champs");
+        output.inspect(view.records[i]);
+        output.inspect(apprenantSourceRecord);
+        output.text("✅ La candidature a été associée à son apprenant.");
+        // todo: si record selectionner l'associer champs "Fiche apprenants"
       } else {
-        output.text("Voici les résultats : ");
-        output.table(apprenantResultFilterd);
-        let catOrDog = await input.buttonsAsync(
-          "Souhaitez vous lier ce champ ?",
-          ["Oui", "Non"]
-        );
-        if (catOrDog === "Oui") {
-          const apprenantSourceRecord = await input.recordAsync(
-            "Veuillez sélectionner un enregistrement :",
-            apprenantResult
-              .map((value, i) => (value ? recordsApprenants[i] : undefined))
-              .filter((value) => value)
-          );
-
-          output.inspect(view.records[i]);
-          output.inspect(apprenantSourceRecord);
-          output.text("✅ La candidature a été associée à son apprenant.");
-          // todo si record selectionner l'associer champs "Fiche apprenants"
-        } else {
-          output.text("☑ On passe au suivant");
-        }
+        output.text("☑ On passe au suivant");
       }
     }
   }
-};
+}
