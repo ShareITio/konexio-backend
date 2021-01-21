@@ -32,23 +32,31 @@ async () => {
         parentTable: "learnerTable",
       }),
       input.config.field("sessionProgram", {
-        label: "Champ programme des apprenants",
+        label: "Champ programme de la session",
         parentTable: "sessionTable",
       }),
       input.config.field("sessionTitle", {
-        label: "Champ titre des apprenants",
+        label: "Champ titre de la session",
         parentTable: "sessionTable",
       }),
       input.config.field("sessionStart", {
-        label: "Champ date de début des apprenants",
+        label: "Champ date de début de la session",
         parentTable: "sessionTable",
       }),
       input.config.field("sessionEnd", {
-        label: "Champ date de fin des apprenants",
+        label: "Champ date de fin de la session",
         parentTable: "sessionTable",
       }),
       input.config.field("sessionWelcomeText", {
-        label: "Champs texte de bienvenue des apprenants",
+        label: "Champs texte de bienvenue de la session",
+        parentTable: "sessionTable",
+      }),
+      input.config.field("facilitators", {
+        label: "Champs des animateurs de la session",
+        parentTable: "sessionTable",
+      }),
+      input.config.field("learners", {
+        label: "Champs des apprenants de la session ",
         parentTable: "sessionTable",
       }),
     ],
@@ -77,41 +85,41 @@ async () => {
 
     // préparation des données à envoyer vers la LAMBDA
     const data = sessionQuery.records.map((sessionRecord) => {
-      let learners = [];
-      const cellLearners = sessionRecord.getCellValue("Apprenants");
-      if (cellLearners) {
-        // récupére les champs guid, id, et email de chaque Apprenants en priorité
-        learners = sessionRecord
-          .getCellValue("Apprenants")
-          .map((learnerRecord) => {
-            // lien entre le champs de la session et détail de l'apprennant
-            const learnerCreated = learnerQuery.records.find(
-              ({ id }) => learnerRecord.id === id
-            );
-            if (learnerCreated) {
-              const guid = learnerCreated.getCellValue(config.learnerGUID);
-              if (guid) {
-                return {
-                  guid,
-                  id: learnerCreated.getCellValue(config.learnerId),
-                  email: learnerCreated.getCellValue(config.learnerEmail),
-                };
-              }
-            }
-            throw {
-              message:
-                "L'apprennant n'a pas été retrouvé dans la vue 'Comptes CK créés' ou ne contient pas de GUID.",
-              data: learnerRecord,
+      // récupére les champs guid, id, et email de chaque Apprenants en priorité
+      const getLearnerData = (learnerRecord) => {
+        // lien entre le champs de la session et détail de l'apprennant
+        const learnerCreated = learnerQuery.records.find(
+          ({ id }) => learnerRecord.id === id
+        );
+        if (learnerCreated) {
+          const guid = learnerCreated.getCellValue(config.learnerGUID);
+          if (guid) {
+            return {
+              guid,
+              id: learnerCreated.getCellValue(config.learnerId),
+              email: learnerCreated.getCellValue(config.learnerEmail),
             };
-          });
-      }
+          }
+        }
+        throw {
+          message:
+            "L'apprennant n'a pas été retrouvé dans la vue 'Comptes CK créés' ou ne contient pas de GUID.",
+          data: learnerRecord,
+        };
+      };
+
       const data = {
         program: sessionRecord.getCellValue(config.sessionProgram),
         title: sessionRecord.getCellValue(config.sessionTitle),
         start: sessionRecord.getCellValue(config.sessionStart),
         end: sessionRecord.getCellValue(config.sessionEnd),
         welcomeText: sessionRecord.getCellValue(config.sessionWelcomeText),
-        learners,
+        facilitators: (
+          sessionRecord.getCellValue(config.facilitators) || []
+        ).map(getLearnerData),
+        learners: (sessionRecord.getCellValue(config.learners) || []).map(
+          getLearnerData
+        ),
       };
 
       if (!data.title) {
