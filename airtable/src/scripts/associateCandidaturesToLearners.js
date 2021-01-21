@@ -20,82 +20,89 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
       "TODO: Ce script permet de créer de nouveaux apprenants dans CrossKnowledge. Les paramètres ci-dessous servent à trouver les informations requises à la bonne exécution du script (Il n'est pas nécessaire d'y toucher).",
     items: [
       input.config.table("apprenantsTable", {
-        label: "Table des apprenants",
+        label: "📦 Table des apprenants",
       }),
       input.config.view("apprenantsView", {
-        label: "Vue des apprenants",
+        label: "👁️ Vue des apprenants",
         parentTable: "apprenantsTable",
       }),
       input.config.field("apprenantsEmail", {
-        label: "Champs email des apprenants",
+        label: "🏷️ Champ email des apprenants",
         parentTable: "apprenantsTable",
       }),
       input.config.field("apprenantsFirstname", {
-        label: "Champs prénom des apprenants",
+        label: "🏷️ Champ prénom des apprenants",
         parentTable: "apprenantsTable",
       }),
       input.config.field("apprenantsLastname", {
-        label: "Champs nom des apprenants",
+        label: "🏷️ Champ nom des apprenants",
         parentTable: "apprenantsTable",
       }),
       input.config.field("apprenantsPhone", {
-        label: "Champs téléphone des apprenants",
+        label: "🏷️ Champ téléphone des apprenants",
         parentTable: "apprenantsTable",
       }),
       input.config.table("candidaturesASTable", {
-        label: "Table des candidatures digitAll & digitStart",
+        label: "📦 Table des candidatures DigitAll & DigitStart",
       }),
       // input.config.table("candidaturesASTableDigitTous", {
-      //   label: "Table des candidatures digitTous",
+      //   label: "📦 Table des candidatures DigitTous",
       // }),
       input.config.view("nouvelleAllView", {
-        label: "Vue des candidatures digitAll",
+        label: "👁️ Vue des candidatures DigitAll",
         parentTable: "candidaturesASTable",
       }),
       input.config.view("nouvelleStartView", {
-        label: "Vue des candidatures digitStart",
+        label: "👁️ Vue des candidatures DigitStart",
         parentTable: "candidaturesASTable",
       }),
       // input.config.view("nouvelleTousView", {
-      //   label: "Vue des candidatures digitTous",
+      //   label: "👁️ Vue des candidatures DigitTous",
       //   parentTable: "candidaturesASTableDigitTous",
       // }),
       input.config.field("candidaturesASEmail", {
-        label: "Champs email des candidatures",
+        label: "🏷️ Champ email des candidatures",
         parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASFirstname", {
-        label: "Champs prénom des candidatures",
+        label: "🏷️ Champ prénom des candidatures",
         parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASLastname", {
-        label: "Champs nom des candidatures",
+        label: "🏷️ Champ nom des candidatures",
         parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASPhone", {
-        label: "Champs téléphone des candidatures",
+        label: "🏷️ Champ téléphone des candidatures",
         parentTable: "candidaturesASTable",
       }),
+      input.config.field("candidaturesASLearners", {
+        label: "🏷️ Champ fiche apprenants des candidatures",
+        parentTable: "candidaturesASTable",
+      }),
+
       // input.config.field("candidaturesASEmailDigiTous", {
-      //   label: "Champs email des candidatures DigiTous",
+      //   label: "🏷️ Champ email des candidatures DigiTous",
       //   parentTable: "candidaturesASTableDigitTous",
       // }),
       // input.config.field("candidaturesASFirstnameDigiTous", {
-      //   label: "Champs prénom des candidatures DigiTous",
+      //   label: "🏷️ Champ prénom des candidatures DigiTous",
       //   parentTable: "candidaturesASTableDigitTous",
       // }),
       // input.config.field("candidaturesASLastnameDigiTous", {
-      //   label: "Champs nom des candidatures DigiTous",
+      //   label: "🏷️ Champ nom des candidatures DigiTous",
       //   parentTable: "candidaturesASTableDigitTous",
       // }),
       // input.config.field("candidaturesASPhoneDigiTous", {
-      //   label: "Champs téléphone des candidatures DigiTous",
+      //   label: "🏷️ Champ téléphone des candidatures DigiTous",
       //   parentTable: "candidaturesASTableDigitTous",
       // }),
     ],
   });
 
-  output.markdown("### Association candidatures apprenants");
+  output.markdown(
+    "### Associer des candidatures avec des apprenants existants"
+  );
 
   // initialisation
   // todo: ajouter une jolie description
@@ -109,6 +116,7 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
     firstName: record.getCellValue(config.candidaturesASFirstname),
     email: record.getCellValue(config.candidaturesASEmail),
     phone: record.getCellValue(config.candidaturesASPhone),
+    learners: record.getCellValue(config.candidaturesASLearners),
   }));
   output.markdown("✅ Vue des nouvelles candidatures DigitAll chargée.");
 

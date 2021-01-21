@@ -15,10 +15,18 @@ export const scenarioSearchDuplicates = async (
   for (const i in applicantsData) {
     // todo: passé si la candidature a deja été liée à cet apprenant
     const applicantData = applicantsData[i];
+    const applicantsRecord = applicantsRecords[i];
 
     output.markdown("---");
-    output.text("Voici le candidat à comparer: ");
+    output.text(`Voici le candidat ${i}/${applicantsData.length} à comparer: `);
     output.table(translateApplicantKeys(applicantData));
+
+    if (applicantData.learner) {
+      await input.buttonsAsync("☑ Le candidat possède déjà son apprenant", [
+        "Passer",
+      ]);
+      break;
+    }
 
     // compare apprenant/candidature
     const learnersRatio = learnersData.map((learnerData) =>
@@ -41,7 +49,7 @@ export const scenarioSearchDuplicates = async (
         "Passer",
       ]);
     } else {
-      output.text("Voici les résultats : ");
+      output.text("Apprenants correspondants trouvés : ");
       output.table(
         learnersFiltred.map(({ ratio, data }) => ({
           ...translateLearnerKeys(data),
@@ -54,20 +62,22 @@ export const scenarioSearchDuplicates = async (
       let selectedLearnerRecord;
       while (!selectedLearnerRecord) {
         let response = await input.buttonsAsync(
-          "Souhaitez vous lier ce champ ?",
+          "Souhaitez-vous associer la candidature avec l'un de ces apprenants ?",
           ["Oui", "Non"]
         );
         if (response === "Oui") {
           selectedLearnerRecord = await input.recordAsync(
-            "Veuillez sélectionner un enregistrement :",
+            "Veuillez sélectionner l'apprenant à associer :",
             learnersFiltred.map(({ record }) => record)
           );
           if (selectedLearnerRecord) {
             // output.inspect(applicantRecord);
             // output.inspect(selectedLearnerRecord);
-
+            // await config.candidaturesASTable.updateRecordAsync(applicantsRecord, {
+            //   [config.candidaturesASLearners]:selectedLearnerRecord
+            // })
             // todo: si record selectionner l'associer champs "Fiche apprenants"
-            // output.text("✅ La candidature a été associée à son apprenant.");
+            // output.text("✅ La candidature a été associée à l'apprenant sélectionné.");
             output.text(
               "🛠️ La fonctionnalité d'association de la candidature vers son apprenant est en cours de création."
             );
