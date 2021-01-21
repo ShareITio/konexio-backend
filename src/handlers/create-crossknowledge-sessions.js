@@ -10,6 +10,7 @@ const {
   registerSession,
   getTrainings,
   getLearner,
+  addFacilitatorsSession,
 } = require("../crossknowledge");
 const { ENVIRONMENT_PRODUCTION } = require("../constants");
 /**
@@ -104,6 +105,19 @@ exports.createCrossknowledgeSessions = async (event, context) => {
         });
       }
 
+      let facilitatorsFormated = [];
+      if (session.facilitators && session.facilitators.length > 0) {
+        facilitatorsFormated = session.facilitators.map((learner, j) => {
+          console.log("Vérify learner", j);
+          if (!learner.guid) {
+            throw makeReturnError(
+              makeLearnerGUIDError({ i, j, detail: learner })
+            );
+          }
+          return learner.guid;
+        });
+      }
+
       return {
         title: session.title,
         start: session.start,
@@ -111,6 +125,7 @@ exports.createCrossknowledgeSessions = async (event, context) => {
         welcomeText: session.welcomeText,
         trainingGUID: training.guid,
         learnersGUID: learnersFormated,
+        facilitatorsGUID: facilitatorsFormated,
       };
     });
     console.log("Formatage des données réussie", formatedSessions);
@@ -118,8 +133,10 @@ exports.createCrossknowledgeSessions = async (event, context) => {
     // Verification de la présence des apprenants dans CK
     await Promise.all(
       Object.values(
-        formatedSessions.reduce((acc, { learnersGUID }) => {
-          learnersGUID.forEach((guid) => (acc[guid] = guid));
+        formatedSessions.reduce((acc, { learnersGUID, facilitatorsGUID }) => {
+          [...learnersGUID, ...facilitatorsGUID].forEach(
+            (guid) => (acc[guid] = guid)
+          );
           return acc;
         }, {})
       ).map(async (guid) => {
@@ -139,6 +156,7 @@ exports.createCrossknowledgeSessions = async (event, context) => {
       formatedSessions.map(
         async ({
           learnersGUID,
+          facilitatorsGUID,
           title,
           start,
           end,
@@ -179,6 +197,24 @@ exports.createCrossknowledgeSessions = async (event, context) => {
               }
             })
           );
+
+          console.log("Register Facilitator : ", facilitatorsGUID);
+          const registerResponse = await addFacilitatorsSession(
+            sessionGUID,
+            facilitatorsGUID
+          );
+          if (!registerResponse.success) {
+            throw makeReturnError({
+              code: 222,
+              message: "Erreur lors de l'ajout des animateurs.",
+              detail: {
+                facilitatorsGUID,
+                response: registerResponse,
+              },
+            });
+          }
+          // todo: add facilitator to session
+
           return sessionResponse;
         }
       )

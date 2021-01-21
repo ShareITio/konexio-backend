@@ -117,3 +117,17 @@ module.exports.registerSession = (sessionGUID, learnerGUID) =>
     method: "POST",
     headers: HEADERS,
   });
+
+module.exports.addFacilitatorsSession = (sessionGUID, facilitators) => {
+  const postData = querystring.stringify({ facilitators });
+  console.log("postData", postData);
+  return request(
+    {
+      hostname: process.env.CROSSKNOWLEDGE_HOST,
+      path: `/API/ADMIN/v1/REST/Session/${sessionGUID}/Facilitator`,
+      method: "POST",
+      headers: HEADERS,
+    },
+    postData
+  );
+};
