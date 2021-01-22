@@ -13,58 +13,17 @@ const {
   addFacilitatorsSession,
 } = require("../crossknowledge");
 const { ENVIRONMENT_PRODUCTION } = require("../constants");
-/**
- * Probleme avec CK lorsque trop de requete, il ne repond plus et renvoie un data undefined
- */
-const makeTrainingError = ({ title, detail }) => ({
-  code: 1,
-  message: `Le programme "${title}" n'a pas été retrouvé dans crossknowledge.`,
-  detail,
-});
-const makeTitleError = ({ i, detail }) => ({
-  code: 2,
-  message: `La session numéro "${i}" dans l'ordre d'arrivé n'a pas de titre.`,
-  detail,
-});
-const makeStartError = ({ i, detail }) => ({
-  code: 3,
-  message: `La session numéro "${i}" dans l'ordre d'arrivé n'a pas de date de début.`,
-  detail,
-});
-const makeLearnerGUIDError = ({ i, j, detail }) => ({
-  code: 4,
-  message: `Le GUID de l'utilisateur numéro "${j}" de la session numéro "${i}" n'est pas correct.`,
-  detail: detail,
-});
-const makeNoLearnerError = ({ detail }) => ({
-  code: 5,
-  message: `Certains guid d'apprenants n'existent pas.`,
-  detail: detail,
-});
-const makeCreateLearnerError = ({
-  title,
-  learnerGUID,
-  sessionGUID,
-  detail,
-}) => ({
-  code: 6,
-  message: `L'enregistrement de l'apprenant ${learnerGUID} à la session "${title}" (${sessionGUID}) a échoué.`,
-  detail: detail,
-});
-const makeCreateSessionError = ({ title, detail }) => ({
-  code: 7,
-  message: `La création de la session "${title}" a échoué.`,
-  detail: detail,
-});
-
-const makeReturnError = (errorObject) => ({
-  ok: false,
-  data: errorObject,
-});
-const makeReturnSuccess = (successObject) => ({
-  ok: true,
-  data: successObject,
-});
+const {
+  makeReturnError,
+  makeReturnSuccess,
+  makeTrainingError,
+  makeTitleError,
+  makeStartError,
+  makeLearnerGUIDError,
+  makeNoLearnerError,
+  makeCreateLearnerError,
+  makeCreateSessionError,
+} = require("../errorManagement");
 
 // Créé des session avec utilisateurs enregistrés dans crossknowledge
 exports.createCrossknowledgeSessions = async (event, context) => {
@@ -152,73 +111,7 @@ exports.createCrossknowledgeSessions = async (event, context) => {
 
     // à partir d'ici, toutes les données sont conformes et peuvent etre envoyées vers CK
     // Envoie des données vers crossknowledge
-    const result = await Promise.all(
-      formatedSessions.map(
-        async ({
-          learnersGUID,
-          facilitatorsGUID,
-          title,
-          start,
-          end,
-          welcomeText,
-          trainingGUID,
-        }) => {
-          console.log("Send : ", title);
-          const sessionResponse = await createSession({
-            title,
-            start,
-            end,
-            welcomeText,
-            trainingGUID,
-          });
-          if (!sessionResponse.success) {
-            throw makeReturnError(
-              makeCreateSessionError({ title, detail: sessionResponse })
-            );
-          }
-
-          const { guid: sessionGUID } = sessionResponse.value[0];
-          await Promise.all(
-            learnersGUID.map(async (learnerGUID) => {
-              console.log("Register : ", learnerGUID);
-              const registerResponse = await registerSession(
-                sessionGUID,
-                learnerGUID
-              );
-              if (!registerResponse.success) {
-                throw makeReturnError(
-                  makeCreateLearnerError({
-                    title,
-                    sessionGUID,
-                    learnerGUID,
-                    detail: registerResponse,
-                  })
-                );
-              }
-            })
-          );
-
-          console.log("Register Facilitator : ", facilitatorsGUID);
-          const registerResponse = await addFacilitatorsSession(
-            sessionGUID,
-            facilitatorsGUID
-          );
-          if (!registerResponse.success) {
-            throw makeReturnError({
-              code: 222,
-              message: "Erreur lors de l'ajout des animateurs.",
-              detail: {
-                facilitatorsGUID,
-                response: registerResponse,
-              },
-            });
-          }
-          // todo: add facilitator to session
-
-          return sessionResponse;
-        }
-      )
-    );
+    const result = await Promise.all(formatedSessions.map(createWholeSession));
 
     console.log(result);
     return makeReturn(
@@ -235,4 +128,69 @@ exports.createCrossknowledgeSessions = async (event, context) => {
     }
     return makeReturn(reason, STATUS_ERROR);
   }
+};
+
+const createWholeSession = async ({
+  learnersGUID,
+  facilitatorsGUID,
+  title,
+  start,
+  end,
+  welcomeText,
+  trainingGUID,
+}) => {
+  console.log("Send : ", title);
+  const sessionResponse = await createSession({
+    title,
+    start,
+    end,
+    welcomeText,
+    trainingGUID,
+  });
+  if (!sessionResponse.success) {
+    throw makeReturnError(
+      makeCreateSessionError({ title, detail: sessionResponse })
+    );
+  }
+
+  // recuperation du GUID de la session
+  const { guid: sessionGUID } = sessionResponse.value[0];
+
+  // lien avec les apprenants
+  await Promise.all(
+    learnersGUID.map(async (learnerGUID) => {
+      console.log("Register : ", learnerGUID);
+      const registerResponse = await registerSession(sessionGUID, learnerGUID);
+      if (!registerResponse.success) {
+        throw makeReturnError(
+          makeCreateLearnerError({
+            title,
+            sessionGUID,
+            learnerGUID,
+            detail: registerResponse,
+          })
+        );
+      }
+    })
+  );
+
+  // lien avec les animateurs
+  console.log("Register Facilitator : ", facilitatorsGUID);
+  const facilitatorResponse = await addFacilitatorsSession(
+    sessionGUID,
+    facilitatorsGUID
+  );
+  if (!facilitatorResponse.success) {
+    throw makeReturnError({
+      code: 222,
+      message: "Erreur lors de l'ajout des animateurs.",
+      detail: {
+        facilitatorsGUID,
+        response: facilitatorResponse,
+      },
+    });
+  }
+  // todo: add facilitator to session
+
+  return sessionResponse;
 };
