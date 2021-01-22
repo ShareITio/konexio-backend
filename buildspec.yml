@@ -8,11 +8,11 @@ phases:
   pre_build:
     commands:
       - echo "[Pre-Build phase]"
+      - rm -rf ./airtable
       # Discover and run unit tests in the '__tests__' directory
       - npm run test
       # Remove all unit tests to reduce the size of the package that will be ultimately uploaded to Lambda
       - rm -rf ./tests
-      - rm -rf ./airtable
       # Remove all dependencies not needed for the Lambda deployment package (the packages from devDependencies in package.json)
       - npm prune --production
       # Reserve dependencies for lambda layer

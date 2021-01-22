@@ -118,8 +118,13 @@ module.exports.registerSession = (sessionGUID, learnerGUID) =>
     headers: HEADERS,
   });
 
-module.exports.addFacilitatorsSession = (sessionGUID, facilitators) => {
-  const postData = querystring.stringify({ facilitators });
+module.exports.addFacilitatorsSession = (sessionGUID, facilitatorsGUID) => {
+  const postData = querystring.stringify(
+    facilitatorsGUID.reduce((acc, guid, i) => {
+      acc[`facilitators[${i}][guid]`] = guid;
+      return acc;
+    }, {})
+  );
   console.log("postData", postData);
   return request(
     {
