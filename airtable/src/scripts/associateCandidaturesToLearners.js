@@ -10,7 +10,7 @@
 // 4.2.2 Lier candidature à apprenant
 
 const { scenarioSearchDuplicates } = require("../utils/association/scenario");
-
+const { makeUpdateRecord, loadView } = require("../utils/model");
 // retirer le block de la fonction dabs la version build du script pour pouvoir lexecuter dans airtable
 (async () => {
   const config = input.config({
@@ -109,7 +109,6 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
   output.markdown("### Association candidatures apprenants");
 
   // initialisation
-
   // Definition du modele commun de données
   const ModelDigitAllStart = {
     lastName: config.candidaturesASLastname,
@@ -131,88 +130,68 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
     email: config.apprenantsEmail,
     phone: config.apprenantsPhone,
   };
-  // Fonction préparant une méthode joignant une candidature à un apprenant
-  const makeBinder = (applicantTable, applicantLearnerField) => (
-    applicantRecord,
-    learnerRecord
-  ) =>
-    applicantTable.updateRecordAsync(applicantRecord, {
-      [applicantLearnerField.id]: [learnerRecord],
-    });
 
+  const learnerInfos = {
+    table: config.apprenantsTable,
+    view: config.apprenantsView,
+    model: ModelLearner,
+  };
   const applicantsInfos = [
     {
       table: config.candidaturesASTable,
       view: config.nouvelleAllView,
       model: ModelDigitAllStart,
-      bind: makeBinder(config.candidaturesASTable, ModelDigitAllStart.learner),
+      bind: makeUpdateRecord(
+        config.candidaturesASTable,
+        ModelDigitAllStart.learners
+      ),
     },
     {
       table: config.candidaturesASTable,
       view: config.nouvelleStartView,
       model: ModelDigitAllStart,
-      bind: makeBinder(config.candidaturesASTable, ModelDigitAllStart.learner),
+      bind: makeUpdateRecord(
+        config.candidaturesASTable,
+        ModelDigitAllStart.learners
+      ),
     },
     {
       table: config.candidaturesASTableDigiTous,
       view: config.nouvelleTousView,
       model: ModelDigitTous,
-      bind: makeBinder(
+      bind: makeUpdateRecord(
         config.candidaturesASTableDigiTous,
-        ModelDigitTous.learner
+        ModelDigitTous.learners
       ),
     },
   ];
-  const learnerInfos = {
-    table: config.apprenantsTable,
-    view: config.apprenantsView,
-    model: ModelLearner,
-    bind: makeBinder(config.apprenantsTable, ModelLearner.learner),
-  };
-
-  // permet de transformer un record en données selon son model
-  const transformRecordToData = (model) => (record) =>
-    Object.keys(model).reduce(
-      (acc, key) => ({
-        ...acc,
-        [key]: record.getCellValue(model[key]),
-      }),
-      {}
-    );
-  const loadView = async ({ view, model, bind }) => {
-    const { records } = await view.selectRecordsAsync();
-    const data = records.map(transformRecordToData(model));
-    output.markdown(`✅ Vue "${view.name}" chargée.`);
-    return {
-      records,
-      data,
-      bind,
-    };
-  };
 
   // recuperation des apprenants
   const learnerLoaded = await loadView(learnerInfos);
+
   // recuperation nouvelle digitAll; digitStart, digiTous
-  const applicantsLoaded = await Promise.all(applicantsInfos.map(loadView));
-  const applicantsLoadedFiltered = applicantsLoaded.map((view) => {
+  const applicantsLoadedFiltered = (
+    await Promise.all(applicantsInfos.map(loadView))
+  )
     // filtrage des record si deja liés
-    const indexFiltered = [];
-    const dataFiltered = view.data.filter(({ learners, i }) => {
-      if (learners) {
-        return false;
-      }
-      indexFiltered.push(i);
-      return true;
+    .map((view) => {
+      const indexFiltered = [];
+      const dataFiltered = view.data.filter(({ learners }, i) => {
+        if (learners && learners.length > 0) {
+          return false;
+        }
+        indexFiltered.push(i);
+        return true;
+      });
+      const recordsFiltered = view.records.filter((_, i) =>
+        indexFiltered.includes(i)
+      );
+      return {
+        ...view,
+        data: dataFiltered,
+        records: recordsFiltered,
+      };
     });
-    const recordsFiltered = view.records.filter(
-      (_, i) => !indexFiltered.includes(i)
-    );
-    return {
-      ...view,
-      data: dataFiltered,
-      records: recordsFiltered,
-    };
-  });
 
   output.markdown(
     `ℹ️ Nous avons trouvé ${applicantsLoadedFiltered.reduce(
@@ -222,7 +201,7 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
   );
   applicantsLoadedFiltered.forEach((load, i) => {
     output.markdown(
-      `- ${load.records.length} pour "${applicantsInfos[i].view.name}".`
+      `- ${load.records.length} pour "${applicantsInfos[i].view.name}" de "${applicantsInfos[i].table.name}.`
     );
   });
 

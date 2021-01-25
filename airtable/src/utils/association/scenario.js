@@ -72,7 +72,7 @@ export const scenarioSearchDuplicates = async (
             learnersFiltred.map(({ record }) => record)
           );
           if (selectedLearnerRecord) {
-            await bind(applicantsRecord, selectedLearnerRecord);
+            await bind(applicantsRecord, [selectedLearnerRecord]);
             output.text(
               "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
             );
