@@ -193,7 +193,21 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
       data: digiTousData,
       bind: bindingTousToLearner,
     },
-  ];
+  ].map((view) => {
+    // filtrage des record si deja liés
+    const indexFiltered = [];
+    const dataFiltered = view.data.filter(({ learners, i }) => {
+      if (learners) {
+        return false;
+      }
+      indexFiltered.push(i);
+      return true;
+    });
+    const recordsFiltered = view.record.filter(
+      (_, i) => !indexFiltered.includes(i)
+    );
+    return { ...view, data: dataFiltered, records: recordsFiltered };
+  });
 
   output.markdown(
     `ℹ️ Nous avons trouvé ${views.reduce(
