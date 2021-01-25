@@ -8,7 +8,7 @@ const {
 
 // Scenario de la jointure entre candidatures et apprenants
 export const scenarioSearchDuplicates = async (
-  { data: applicantsData, records: applicantsRecords },
+  { data: applicantsData, records: applicantsRecords, bind },
   learnersData,
   learnersRecord
 ) => {
@@ -73,13 +73,7 @@ export const scenarioSearchDuplicates = async (
             learnersFiltred.map(({ record }) => record)
           );
           if (selectedLearnerRecord) {
-            await config.candidaturesASTable.updateRecordAsync(
-              applicantsRecord,
-              {
-                // determiner la vue ( digiAll/Start ou digiTous)
-                [config.candidaturesASLearners.id]: [selectedLearnerRecord],
-              }
-            );
+            await bind(applicantsRecord, selectedLearnerRecord);
             output.text(
               "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
             );

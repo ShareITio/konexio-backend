@@ -163,16 +163,38 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
     firstName: record.getCellValue(config.apprenantsFirstname),
     email: record.getCellValue(config.apprenantsEmail),
     phone: record.getCellValue(config.apprenantsPhone),
+    learners: record.getCellValue(config.candidaturesASLearners),
   }));
   output.markdown("✅ Vue des nouvelles apprenants chargée.");
 
   // todo afficher le nombre de candidatures à lier
+  const bindingAllStartToLearner = async () =>
+    await config.candidaturesASTable.updateRecordAsync(applicantsRecord, {
+      [config.candidaturesASLearners.id]: [selectedLearnerRecord],
+    });
+  const bindingTousToLearner = async () =>
+    await config.candidaturesTable.updateRecordAsync(applicantsRecord, {
+      [config.candidaturesASTableDigiTous.id]: [selectedLearnerRecord],
+    });
 
   const views = [
-    { records: digitAllRecords, data: digitAllData },
-    { records: digiStartRecords, data: digiStartData },
-    { records: digiTousRecords, data: digiTousData },
+    {
+      records: digitAllRecords,
+      data: digitAllData,
+      bind: bindDigitAllDigitStart,
+    },
+    {
+      records: digiStartRecords,
+      data: digiStartData,
+      bind: bindingAllStartToLearner,
+    },
+    {
+      records: digiTousRecords,
+      data: digiTousData,
+      bind: bindingTousToLearner,
+    },
   ];
+
   output.markdown(
     `ℹ️ Nous avons trouvé ${views.reduce(
       (acc, { records }) => acc + records.length,
