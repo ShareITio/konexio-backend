@@ -18,7 +18,9 @@ export const scenarioSearchDuplicates = async (
     const applicantsRecord = applicantsRecords[i];
 
     output.markdown("---");
-    output.text(`Voici le candidat ${i}/${applicantsData.length} à comparer: `);
+    output.text(
+      `Voici le candidat ${Number(i) + 1}/${applicantsData.length} à comparer: `
+    );
     output.table(translateApplicantKeys(applicantData));
 
     if (applicantData.learner) {
@@ -49,7 +51,7 @@ export const scenarioSearchDuplicates = async (
         "Passer",
       ]);
     } else {
-      output.text("Apprenants correspondants trouvés : ");
+      output.text(" 👩🏽‍🎓 Apprenants correspondants trouvés");
       output.table(
         learnersFiltred.map(({ ratio, data }) => ({
           ...translateLearnerKeys(data),
@@ -62,25 +64,31 @@ export const scenarioSearchDuplicates = async (
       let selectedLearnerRecord;
       while (!selectedLearnerRecord) {
         let response = await input.buttonsAsync(
-          "Souhaitez-vous associer la candidature avec l'un de ces apprenants ?",
+          "Souhaitez-vous associer la 🙋‍♂️ candidature avec l'un de ces 👩🏽‍🎓 apprenants",
           ["Oui", "Non"]
         );
         if (response === "Oui") {
           selectedLearnerRecord = await input.recordAsync(
-            "Veuillez sélectionner l'apprenant à associer :",
+            "Veuillez sélectionner 👩🏽‍🎓 l'apprenant à associer",
             learnersFiltred.map(({ record }) => record)
           );
           if (selectedLearnerRecord) {
             // output.inspect(applicantRecord);
             // output.inspect(selectedLearnerRecord);
-            // await config.candidaturesASTable.updateRecordAsync(applicantsRecord, {
-            //   [config.candidaturesASLearners]:selectedLearnerRecord
-            // })
-            // todo: si record selectionner l'associer champs "Fiche apprenants"
-            // output.text("✅ La candidature a été associée à l'apprenant sélectionné.");
-            output.text(
-              "🛠️ La fonctionnalité d'association de la candidature vers son apprenant est en cours de création."
+            await config.candidaturesASTable.updateRecordAsync(
+              applicantsRecord,
+              {
+                // determiner la vue ( digiAll/Start ou digiTous)
+                [config.candidaturesASLearners.id]: [selectedLearnerRecord],
+              }
             );
+            // todo: si record selectionner l'associer champs "Fiche apprenants"
+            output.text(
+              "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
+            );
+            // output.text(
+            //   "🛠️ La fonctionnalité d'association de la candidature vers son apprenant est en cours de création."
+            // );
           } else {
             output.text("❌ Vous n'avez pas choisi de champ");
           }
