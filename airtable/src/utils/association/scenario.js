@@ -73,8 +73,6 @@ export const scenarioSearchDuplicates = async (
             learnersFiltred.map(({ record }) => record)
           );
           if (selectedLearnerRecord) {
-            // output.inspect(applicantRecord);
-            // output.inspect(selectedLearnerRecord);
             await config.candidaturesASTable.updateRecordAsync(
               applicantsRecord,
               {
@@ -82,13 +80,9 @@ export const scenarioSearchDuplicates = async (
                 [config.candidaturesASLearners.id]: [selectedLearnerRecord],
               }
             );
-            // todo: si record selectionner l'associer champs "Fiche apprenants"
             output.text(
               "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
             );
-            // output.text(
-            //   "🛠️ La fonctionnalité d'association de la candidature vers son apprenant est en cours de création."
-            // );
           } else {
             output.text("❌ Vous n'avez pas choisi de champ");
           }

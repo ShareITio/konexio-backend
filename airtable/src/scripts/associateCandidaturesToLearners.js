@@ -14,12 +14,12 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
 // retirer le block de la fonction dabs la version build du script pour pouvoir lexecuter dans airtable
 (async () => {
   const config = input.config({
-    title: "Configuration du lien candidatures/apprenants",
-    // todo mettre à jour la description
-    // todo: ajouter une jolie description
+    title:
+      "Configuration de l'association des candidatures DigitAll, DigitStart et DigitTous à leurs apprenants",
     description:
-      "TODO: Ce script permet de créer de nouveaux apprenants dans CrossKnowledge. Les paramètres ci-dessous servent à trouver les informations requises à la bonne exécution du script (Il n'est pas nécessaire d'y toucher).",
+      "Ce script permet de lier une candidature DigitAll, DigitStart ou DigitTous à sa correspondance dans la table Apprenants. Les paramètres ci-dessous servent à trouver les informations requises à la bonne exécution du script (Il n'est pas nécessaire d'y toucher).",
     items: [
+      // Apprenants
       input.config.table("apprenantsTable", {
         label: "📦 Table des apprenants",
       }),
@@ -43,11 +43,9 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
         label: "🏷️ Champ téléphone des apprenants",
         parentTable: "apprenantsTable",
       }),
+      // Candidatures DigitAll et DigiStart
       input.config.table("candidaturesASTable", {
         label: "📦 Table des candidatures digitAll & digiStart",
-      }),
-      input.config.table("candidaturesASTableDigiTous", {
-        label: "📦 Table des candidatures digiTous",
       }),
       input.config.view("nouvelleAllView", {
         label: "👓 Vue des candidatures digitAll",
@@ -56,10 +54,6 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
       input.config.view("nouvelleStartView", {
         label: "👓 Vue des candidatures digitStart",
         parentTable: "candidaturesASTable",
-      }),
-      input.config.view("nouvelleTousView", {
-        label: "👓 Vue des candidatures digiTous",
-        parentTable: "candidaturesASTableDigiTous",
       }),
       input.config.field("candidaturesASEmail", {
         label: "🏷️ Champ email des candidatures",
@@ -80,6 +74,14 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
       input.config.field("candidaturesASLearners", {
         label: "🏷️ Champ fiche apprenants des candidatures",
         parentTable: "candidaturesASTable",
+      }),
+      // Candidatures DigiTous
+      input.config.table("candidaturesASTableDigiTous", {
+        label: "📦 Table des candidatures digiTous",
+      }),
+      input.config.view("nouvelleTousView", {
+        label: "👓 Vue des candidatures digiTous",
+        parentTable: "candidaturesASTableDigiTous",
       }),
       input.config.field("candidaturesASLearnersDigiTous", {
         label: "🏷️ Champ fiche apprenants des candidatures",
