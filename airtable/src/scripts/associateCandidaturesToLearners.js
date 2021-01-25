@@ -110,90 +110,91 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
 
   // initialisation
 
-  // recuperation nouvelle digitAll
-  const {
-    records: digitAllRecords,
-  } = await config.nouvelleAllView.selectRecordsAsync();
-  const digitAllData = digitAllRecords.map((record) => ({
-    lastName: record.getCellValue(config.candidaturesASLastname),
-    firstName: record.getCellValue(config.candidaturesASFirstname),
-    email: record.getCellValue(config.candidaturesASEmail),
-    phone: record.getCellValue(config.candidaturesASPhone),
-    learners: record.getCellValue(config.candidaturesASLearners),
-  }));
-  output.markdown("✅ Vue des nouvelles candidatures DigitAll chargée.");
-
-  // recuperation nouvelle digitStart
-
-  const {
-    records: digiStartRecords,
-  } = await config.nouvelleStartView.selectRecordsAsync();
-  const digiStartData = digiStartRecords.map((record) => ({
-    lastName: record.getCellValue(config.candidaturesASLastname),
-    firstName: record.getCellValue(config.candidaturesASFirstname),
-    email: record.getCellValue(config.candidaturesASEmail),
-    phone: record.getCellValue(config.candidaturesASPhone),
-    learners: record.getCellValue(config.candidaturesASLearners),
-  }));
-  output.markdown("✅ Vue des nouvelles candidatures DigiStart chargée.");
-  console.log(digiStartData);
-
-  // recuperation nouvelle digiTous
-
-  const {
-    records: digiTousRecords,
-  } = await config.nouvelleTousView.selectRecordsAsync();
-  const digiTousData = digiTousRecords.map((record) => ({
-    lastName: record.getCellValue(config.candidaturesASLastnameDigiTous),
-    firstName: record.getCellValue(config.candidaturesASFirstnameDigiTous),
-    email: record.getCellValue(config.candidaturesASEmailDigiTous),
-    phone: record.getCellValue(config.candidaturesASPhoneDigiTous),
-    learners: record.getCellValue(config.candidaturesASLearnersDigiTous),
-  }));
-  output.markdown("✅ Vue des nouvelles candidatures DigiTous chargée.");
-  console.log(digiTousData);
-
-  // recuperation apprenants
-  const {
-    records: learnersRecord,
-  } = await config.apprenantsView.selectRecordsAsync();
-  const learnersData = learnersRecord.map((record) => ({
-    id: record.id,
-    lastName: record.getCellValue(config.apprenantsLastname),
-    firstName: record.getCellValue(config.apprenantsFirstname),
-    email: record.getCellValue(config.apprenantsEmail),
-    phone: record.getCellValue(config.apprenantsPhone),
-    learners: record.getCellValue(config.candidaturesASLearners),
-  }));
-  output.markdown("✅ Vue des nouvelles apprenants chargée.");
-
-  // todo afficher le nombre de candidatures à lier
-  const bindingAllStartToLearner = async () =>
-    await config.candidaturesASTable.updateRecordAsync(applicantsRecord, {
-      [config.candidaturesASLearners.id]: [selectedLearnerRecord],
-    });
-  const bindingTousToLearner = async () =>
-    await config.candidaturesTable.updateRecordAsync(applicantsRecord, {
-      [config.candidaturesASTableDigiTous.id]: [selectedLearnerRecord],
+  // Definition du modele commun de données
+  const ModelDigitAllStart = {
+    lastName: config.candidaturesASLastname,
+    firstName: config.candidaturesASFirstname,
+    email: config.candidaturesASEmail,
+    phone: config.candidaturesASPhone,
+    learners: config.candidaturesASLearners,
+  };
+  const ModelDigitTous = {
+    lastName: config.candidaturesASLastnameDigiTous,
+    firstName: config.candidaturesASFirstnameDigiTous,
+    email: config.candidaturesASEmailDigiTous,
+    phone: config.candidaturesASPhoneDigiTous,
+    learners: config.candidaturesASLearnersDigiTous,
+  };
+  const ModelLearner = {
+    lastName: config.apprenantsLastname,
+    firstName: config.apprenantsFirstname,
+    email: config.apprenantsEmail,
+    phone: config.apprenantsPhone,
+  };
+  // Fonction préparant une méthode joignant une candidature à un apprenant
+  const makeBinder = (applicantTable, applicantLearnerField) => (
+    applicantRecord,
+    learnerRecord
+  ) =>
+    applicantTable.updateRecordAsync(applicantRecord, {
+      [applicantLearnerField.id]: [learnerRecord],
     });
 
-  const views = [
+  const applicantsInfos = [
     {
-      records: digitAllRecords,
-      data: digitAllData,
-      bind: bindDigitAllDigitStart,
+      table: config.candidaturesASTable,
+      view: config.nouvelleAllView,
+      model: ModelDigitAllStart,
+      bind: makeBinder(config.candidaturesASTable, ModelDigitAllStart.learner),
     },
     {
-      records: digiStartRecords,
-      data: digiStartData,
-      bind: bindingAllStartToLearner,
+      table: config.candidaturesASTable,
+      view: config.nouvelleStartView,
+      model: ModelDigitAllStart,
+      bind: makeBinder(config.candidaturesASTable, ModelDigitAllStart.learner),
     },
     {
-      records: digiTousRecords,
-      data: digiTousData,
-      bind: bindingTousToLearner,
+      table: config.candidaturesASTableDigiTous,
+      view: config.nouvelleTousView,
+      model: ModelDigitTous,
+      bind: makeBinder(
+        config.candidaturesASTableDigiTous,
+        ModelDigitTous.learner
+      ),
     },
-  ].map((view) => {
+  ];
+  const learnerInfos = {
+    table: config.apprenantsTable,
+    view: config.apprenantsView,
+    model: ModelLearner,
+    bind: makeBinder(config.apprenantsTable, ModelLearner.learner),
+  };
+
+  // permet de transformer un record en données selon son model
+  const transformRecordToData = (model) => (record) =>
+    Object.keys(model).reduce(
+      (acc, key) => ({
+        ...acc,
+        [key]: record.getCellValue(model[key]),
+      }),
+      {}
+    );
+  const loadView = async ({ view, model, bind }) => {
+    const { records } = await view.selectRecordsAsync();
+    const data = records.map(transformRecordToData(model));
+    output.markdown(`✅ Vue "${view.name}" chargée.`);
+    return {
+      records,
+      data,
+      bind,
+    };
+  };
+
+  // recuperation des apprenants
+  const learnerLoaded = await loadView(learnerInfos);
+  // recuperation nouvelle digitAll; digitStart, digiTous
+  const applicantsLoaded = await Promise.all(applicantsInfos.map(loadView));
+  const applicantsLoadedFiltered = applicantsLoaded.map((view) => {
     // filtrage des record si deja liés
     const indexFiltered = [];
     const dataFiltered = view.data.filter(({ learners, i }) => {
@@ -203,21 +204,35 @@ const { scenarioSearchDuplicates } = require("../utils/association/scenario");
       indexFiltered.push(i);
       return true;
     });
-    const recordsFiltered = view.record.filter(
+    const recordsFiltered = view.records.filter(
       (_, i) => !indexFiltered.includes(i)
     );
-    return { ...view, data: dataFiltered, records: recordsFiltered };
+    return {
+      ...view,
+      data: dataFiltered,
+      records: recordsFiltered,
+    };
   });
 
   output.markdown(
-    `ℹ️ Nous avons trouvé ${views.reduce(
+    `ℹ️ Nous avons trouvé ${applicantsLoadedFiltered.reduce(
       (acc, { records }) => acc + records.length,
       0
-    )} nouvelles candidatures à vérifier. Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante. *On passera prochainement les candidats déjà liés à au moins un apprenant.*`
+    )} nouvelles candidatures à vérifier, soi:`
   );
-  for (const j in views) {
-    const view = views[j];
-    await scenarioSearchDuplicates(view, learnersData, learnersRecord);
+  applicantsLoadedFiltered.forEach((load, i) => {
+    output.markdown(
+      `- ${load.records.length} pour "${applicantsInfos[i].view.name}".`
+    );
+  });
+
+  output.markdown(
+    `ℹ️ Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante. *On passera prochainement les candidats déjà liés à au moins un apprenant.*`
+  );
+
+  for (const j in applicantsLoadedFiltered) {
+    const loadedApplicantsView = applicantsLoadedFiltered[j];
+    await scenarioSearchDuplicates(loadedApplicantsView, learnerLoaded);
   }
   output.markdown("✅ Tous les records ont été vérifiés.");
 })();

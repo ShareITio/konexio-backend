@@ -9,8 +9,7 @@ const {
 // Scenario de la jointure entre candidatures et apprenants
 export const scenarioSearchDuplicates = async (
   { data: applicantsData, records: applicantsRecords, bind },
-  learnersData,
-  learnersRecord
+  { data: learnersData, records: learnersRecord }
 ) => {
   for (const i in applicantsData) {
     // todo: passé si la candidature a deja été liée à cet apprenant
