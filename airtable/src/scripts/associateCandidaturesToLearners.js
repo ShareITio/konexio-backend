@@ -43,6 +43,10 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
         label: "🏷️ Champ téléphone des apprenants",
         parentTable: "apprenantsTable",
       }),
+      input.config.field("apprenantsId", {
+        label: "🏷️ Champ identifiant des apprenants",
+        parentTable: "apprenantsTable",
+      }),
       // Candidatures DigitAll et DigiStart
       input.config.table("candidaturesASTable", {
         label: "📦 Table des candidatures digitAll & digiStart",
@@ -75,12 +79,16 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
         label: "🏷️ Champ fiche apprenants des candidatures",
         parentTable: "candidaturesASTable",
       }),
+      input.config.field("candidaturesASId", {
+        label: "🏷️ Champ identifiant des candidature DigitAll DigiStart",
+        parentTable: "candidaturesASTable",
+      }),
       // Candidatures DigiTous
       input.config.table("candidaturesASTableDigiTous", {
-        label: "📦 Table des candidatures digiTous",
+        label: "📦 Table des candidatures DigiTous",
       }),
       input.config.view("nouvelleTousView", {
-        label: "👓 Vue des candidatures digiTous",
+        label: "👓 Vue des candidatures DigiTous",
         parentTable: "candidaturesASTableDigiTous",
       }),
       input.config.field("candidaturesASLearnersDigiTous", {
@@ -103,6 +111,10 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
         label: "🏷️ Champ téléphone des candidatures DigiTous",
         parentTable: "candidaturesASTableDigiTous",
       }),
+      input.config.field("candidaturesASLearnersDigiTousId", {
+        label: "🏷️ Champ identifiant des candidature DigiTous",
+        parentTable: "candidaturesASTableDigiTous",
+      }),
     ],
   });
 
@@ -116,6 +128,7 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
     email: config.candidaturesASEmail,
     phone: config.candidaturesASPhone,
     learners: config.candidaturesASLearners,
+    id: config.candidaturesASId,
   };
   const ModelDigitTous = {
     lastName: config.candidaturesASLastnameDigiTous,
@@ -123,12 +136,14 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
     email: config.candidaturesASEmailDigiTous,
     phone: config.candidaturesASPhoneDigiTous,
     learners: config.candidaturesASLearnersDigiTous,
+    id: config.candidaturesASLearnersDigiTousId,
   };
   const ModelLearner = {
     lastName: config.apprenantsLastname,
     firstName: config.apprenantsFirstname,
     email: config.apprenantsEmail,
     phone: config.apprenantsPhone,
+    id: config.apprenantsId,
   };
 
   const learnerInfos = {
@@ -169,7 +184,7 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
   // recuperation des apprenants
   const learnerLoaded = await loadView(learnerInfos);
 
-  // recuperation nouvelle digitAll; digitStart, digiTous
+  // recuperation nouvelle digitAll; digitStart, DigiTous
   const applicantsLoadedFiltered = (
     await Promise.all(applicantsInfos.map(loadView))
   )
@@ -201,17 +216,17 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
   );
   applicantsLoadedFiltered.forEach((load, i) => {
     output.markdown(
-      `- ${load.records.length} pour "${applicantsInfos[i].view.name}" de "${applicantsInfos[i].table.name}.`
+      `- ${load.records.length} pour "${applicantsInfos[i].view.name}" de "${applicantsInfos[i].table.name}".`
     );
   });
 
   output.markdown(
-    `ℹ️ Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante. *On passera prochainement les candidats déjà liés à au moins un apprenant.*`
+    `ℹ️ Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante.`
   );
 
   for (const j in applicantsLoadedFiltered) {
     const loadedApplicantsView = applicantsLoadedFiltered[j];
     await scenarioSearchDuplicates(loadedApplicantsView, learnerLoaded);
   }
-  output.markdown("✅ Tous les records ont été vérifiés.");
+  output.markdown("✅ Tous les candidatures ont été vérifiés.");
 })();

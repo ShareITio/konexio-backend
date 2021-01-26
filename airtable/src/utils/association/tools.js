@@ -15,7 +15,9 @@ export const translateLearnerKeys = ({
   firstName,
   email,
   phone,
+  id,
 }) => ({
+  [config.apprenantsId.name]: id,
   [config.apprenantsLastname.name]: lastName,
   [config.apprenantsFirstname.name]: firstName,
   [config.apprenantsEmail.name]: email,
@@ -27,7 +29,9 @@ export const translateApplicantKeys = ({
   firstName,
   email,
   phone,
+  id,
 }) => ({
+  [config.candidaturesASId.name]: id,
   [config.candidaturesASLastname.name]: lastName,
   [config.candidaturesASFirstname.name]: firstName,
   [config.candidaturesASEmail.name]: email,

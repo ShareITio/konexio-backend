@@ -46,11 +46,9 @@ export const scenarioSearchDuplicates = async (
     }, []);
 
     if (learnersFiltred.length < 1) {
-      await input.buttonsAsync("☑ Aucune similarité pour ce champs", [
-        "Passer",
-      ]);
+      output.markdown("☑ Aucune similarité pour ce champs");
     } else {
-      output.text(" 👩🏽‍🎓 Apprenants correspondants trouvés");
+      output.text("👩🏽‍🎓 Apprenants correspondants trouvés");
       output.table(
         learnersFiltred.map(({ ratio, data }) => ({
           ...translateLearnerKeys(data),
