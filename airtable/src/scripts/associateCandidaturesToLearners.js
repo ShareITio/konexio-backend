@@ -188,7 +188,6 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
         ({ data: { learners } }) => !(learners && learners.length > 0)
       ),
     }));
-  console.log(applicantsLoadedFiltered);
 
   const applicants = applicantsLoadedFiltered
     .reduce((acc, { values, table, bind }) => {
@@ -198,12 +197,12 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
           data,
           record,
           table: table,
-          bind: bind,
+          bind,
         })),
       ];
     }, [])
     // complete data with ratios
-    .map(({ data, record, table }, j, result) => {
+    .map(({ data, record, table, bind }) => {
       const ratios = learners.values
         .map(({ data: learnerData }) => distanceRatio(data, learnerData))
         // filtrage des apprenant respectant la condition et inclusion des données, du record...
@@ -212,9 +211,8 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
             ratio >= ACCEPTATION_RATIO ? [...acc, { i, ratio }] : acc,
           []
         );
-      return { data, record, table, ratios };
+      return { data, record, table, ratios, bind };
     });
-  console.log(learners);
   output.markdown(
     `ℹ️ Nous avons trouvé ${applicantsLoadedFiltered.reduce(
       (acc, { values }) => acc + values.length,
@@ -259,7 +257,7 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
         ]
       );
       if (response !== "Passer") {
-        await bind(applicants[j].record, [response]);
+        await applicants[j].bind(applicants[j].record, [response]);
         output.text(
           "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
         );

@@ -112,16 +112,28 @@ const { loadView } = require("../utils/model");
       table: config.candidaturesASTable,
       view: config.nouvelleAllView,
       model: ModelDigitAllStart,
+      bind: makeUpdateRecord(
+        config.candidaturesASTable,
+        ModelDigitAllStart.multiple
+      ),
     },
     {
       table: config.candidaturesASTable,
       view: config.nouvelleStartView,
       model: ModelDigitAllStart,
+      bind: makeUpdateRecord(
+        config.candidaturesASTable,
+        ModelDigitAllStart.multiple
+      ),
     },
     {
       table: config.candidaturesASTableDigiTous,
       view: config.nouvelleTousView,
       model: ModelDigitTous,
+      bind: makeUpdateRecord(
+        config.candidaturesASTable,
+        ModelDigitAllStart.multiple
+      ),
     },
   ];
 
@@ -130,29 +142,30 @@ const { loadView } = require("../utils/model");
     await Promise.all(applicantsInfos.map(loadView))
   )
     // filtrage des record si deja liés à uyne candidature multiple
-    .map(({ values, table }) => ({
+    .map(({ values, table, bind }) => ({
+      bind,
       table,
       values: values.filter(
         ({ data: { multiple } }) => !(multiple && multiple.length > 0)
       ),
     }));
-  console.log(applicantsLoadedFiltered);
 
   const applicants = applicantsLoadedFiltered
     // put every data into one array
     .reduce(
-      (acc, { values, table }) => [
+      (acc, { values, table, bind }) => [
         ...acc,
         ...values.map(({ record, data }) => ({
           data: data,
           record: record,
           table: table,
+          bind,
         })),
       ],
       []
     )
     // complete data with ratios
-    .map(({ data, record, table }, j, result) => {
+    .map(({ data, record, table, bind }, j, result) => {
       const ratios = result
         .map(({ data: applicantData }) => distanceRatio(data, applicantData))
         // filtrage des apprenant respectant la condition et inclusion des données, du record...
@@ -163,9 +176,8 @@ const { loadView } = require("../utils/model");
               : acc,
           []
         );
-      return { data, record, table, ratios };
+      return { data, record, table, ratios, bind };
     });
-  console.log(applicants);
 
   output.markdown(
     `ℹ️ Nous avons trouvé ${applicantsLoadedFiltered.reduce(
@@ -182,13 +194,17 @@ const { loadView } = require("../utils/model");
   output.markdown(
     `ℹ️ Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante.`
   );
-
+  const binded = {};
   for (const j in applicants) {
     output.markdown(`---`);
     output.markdown(
       `Voici le candidat ${Number(j) + 1}/${applicants.length} à comparer: `
     );
     output.table(translateApplicantKeys(applicants[j].data));
+    if (binded[j]) {
+      output.text(`☑ Ce candidat a été joint avec ${binded[j].name}`);
+      continue;
+    }
     if (applicants[j].ratios.length > 0) {
       output.text("👩🏽‍🎓 Apprenants correspondants trouvés");
       output.table(
@@ -210,7 +226,8 @@ const { loadView } = require("../utils/model");
         ]
       );
       if (response !== "Passer") {
-        await bind(applicants[j].record, [response]);
+        await applicants[j].bind(applicants[j].record, [response]);
+        binded.j = applicants[j];
         output.text(
           "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
         );
