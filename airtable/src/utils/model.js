@@ -23,6 +23,7 @@ export const loadView = async ({ view, model, table, ...others }) => {
   return {
     records,
     data,
+    table,
     ...others,
   };
 };

@@ -22,13 +22,6 @@ export const scenarioSearchDuplicates = async (
     );
     output.table(translateApplicantKeys(applicantData));
 
-    if (applicantData.learner) {
-      await input.buttonsAsync("☑ Le candidat possède déjà son apprenant", [
-        "Passer",
-      ]);
-      break;
-    }
-
     // compare apprenant/candidature
     const learnersRatio = learnersData.map((learnerData) =>
       distanceRatio(learnerData, applicantData)
@@ -50,7 +43,8 @@ export const scenarioSearchDuplicates = async (
     } else {
       output.text("👩🏽‍🎓 Apprenants correspondants trouvés");
       output.table(
-        learnersFiltred.map(({ ratio, data }) => ({
+        learnersFiltred.map(({ ratio, data, record }) => ({
+          Identifiant: record.name,
           ...translateLearnerKeys(data),
           Correspondance:
             (ratio * 100).toFixed(0) + "%" + getRatioExtension(ratio),
@@ -58,29 +52,24 @@ export const scenarioSearchDuplicates = async (
       );
 
       // tant qu'aucun champ selectionné, boucler (cela permet de redemander si l'utilisateur souhaite lier le champ au cas ou il quitte la selection sans choisir de champ)
-      let selectedLearnerRecord;
-      while (!selectedLearnerRecord) {
-        let response = await input.buttonsAsync(
-          "Souhaitez-vous associer la 🙋‍♂️ candidature avec l'un de ces 👩🏽‍🎓 apprenants",
-          ["Oui", "Non"]
+      let response = await input.buttonsAsync(
+        "Souhaitez-vous associer la 🙋‍♂️ candidature avec l'un de ces 👩🏽‍🎓 apprenants",
+        [
+          { label: "Passer", value: "Passer", variant: "secondary" },
+          ...learnersFiltred.map(({ record }) => ({
+            label: record.name,
+            value: record,
+          })),
+        ]
+      );
+      if (response !== "Passer") {
+        await bind(applicantsRecord, [response]);
+        output.text(
+          "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
         );
-        if (response === "Oui") {
-          selectedLearnerRecord = await input.recordAsync(
-            "Veuillez sélectionner 👩🏽‍🎓 l'apprenant à associer",
-            learnersFiltred.map(({ record }) => record)
-          );
-          if (selectedLearnerRecord) {
-            await bind(applicantsRecord, [selectedLearnerRecord]);
-            output.text(
-              "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
-            );
-          } else {
-            output.text("❌ Vous n'avez pas choisi de champ");
-          }
-        } else {
-          output.text("☑ On passe au suivant");
-          break; // sortie du while
-        }
+      } else {
+        output.text("☑ On passe au suivant");
+        break; // sortie du while
       }
     }
   }
