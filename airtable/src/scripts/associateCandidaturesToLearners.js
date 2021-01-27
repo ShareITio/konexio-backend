@@ -174,69 +174,56 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
   ];
 
   // recuperation des apprenants
-  const learnerLoaded = await loadView(learnerInfos);
-  const { data: learnersData, records: learnersRecord } = learnerLoaded;
+  const learners = await loadView(learnerInfos);
 
   // recuperation nouvelle digitAll; digitStart, DigiTous
   const applicantsLoadedFiltered = (
     await Promise.all(applicantsInfos.map(loadView))
   )
     // filtrage des record si deja liés
-    .map((view) => {
-      const indexFiltered = [];
-      const dataFiltered = view.data.filter(({ learners }, i) => {
-        if (learners && learners.length > 0) {
-          return false;
-        }
-        indexFiltered.push(i);
-        return true;
-      });
-      const recordsFiltered = view.records.filter((_, i) =>
-        indexFiltered.includes(i)
-      );
-      return {
-        ...view,
-        data: dataFiltered,
-        records: recordsFiltered,
-      };
-    })
-    .map((acc, { data, ...others }) => {
-      const learnersFiltred = data.map((applicantData) => {
-        // compare apprenant/candidature
-        const learnersRatio = learnersData.map((learnerData) =>
-          distanceRatio(learnerData, applicantData)
-        );
+    .map(({ values, table, bind }) => ({
+      bind,
+      table,
+      values: values.filter(
+        ({ data: { learners } }) => !(learners && learners.length > 0)
+      ),
+    }));
+  console.log(applicantsLoadedFiltered);
 
-        // filtrage des apprenant respectant la condition et inclusion des données, du record...
-        return learnersRatio.reduce((acc, ratio, i) => {
-          if (ratio >= ACCEPTATION_RATIO) {
-            return [
-              ...acc,
-              { i, ratio, data: learnersData[i], record: learnersRecord[i] },
-            ];
-          }
-          return acc;
-        }, []);
-      });
+  const applicants = applicantsLoadedFiltered
+    .reduce((acc, { values, table, bind }) => {
       return [
         ...acc,
-        {
-          ...others,
+        ...values.map(({ data, record }) => ({
           data,
-          learners: learnersFiltred,
-        },
+          record,
+          table: table,
+          bind: bind,
+        })),
       ];
+    }, [])
+    // complete data with ratios
+    .map(({ data, record, table }, j, result) => {
+      const ratios = learners.values
+        .map(({ data: learnerData }) => distanceRatio(data, learnerData))
+        // filtrage des apprenant respectant la condition et inclusion des données, du record...
+        .reduce(
+          (acc, ratio, i) =>
+            ratio >= ACCEPTATION_RATIO ? [...acc, { i, ratio }] : acc,
+          []
+        );
+      return { data, record, table, ratios };
     });
-
+  console.log(learners);
   output.markdown(
     `ℹ️ Nous avons trouvé ${applicantsLoadedFiltered.reduce(
-      (acc, { records }) => acc + records.length,
+      (acc, { values }) => acc + values.length,
       0
     )} nouvelles candidatures à vérifier, soi:`
   );
-  applicantsLoadedFiltered.forEach((load, i) =>
+  applicantsLoadedFiltered.forEach(({ values }, i) =>
     output.markdown(
-      `- ${load.records.length} pour "${applicantsInfos[i].view.name}" de "${applicantsInfos[i].table.name}".`
+      `- ${values.length} pour "${applicantsInfos[i].view.name}" de "${applicantsInfos[i].table.name}".`
     )
   );
 
@@ -244,52 +231,36 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
     `ℹ️ Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante.`
   );
 
-  for (const j in applicantsLoadedFiltered) {
-    const {
-      data: applicantsData,
-      records: applicantsRecords,
-      bind,
-    } = applicantsLoadedFiltered[j];
-    for (const i in applicantsData) {
-      // todo: passé si la candidature a deja été liée à cet apprenant
-      const applicantData = applicantsData[i];
-      const applicantsRecord = applicantsRecords[i];
-
-      output.markdown(`---
-      Voici le candidat ${Number(i) + 1}/${
-        applicantsData.length
-      } à comparer: `);
-      output.table(translateApplicantKeys(applicantData));
+  for (const j in applicants) {
+    output.markdown(`---`);
+    output.markdown(
+      `Voici le candidat ${Number(j) + 1}/${applicants.length} à comparer: `
+    );
+    output.table(translateApplicantKeys(applicants[j].data));
+    // todo: next si l'index du record à deja ete ajouté
+    if (applicants[j].ratios.length > 0) {
       output.text("👩🏽‍🎓 Apprenants correspondants trouvés");
       output.table(
-        learnersFiltred.map(({ ratio, data, record }) => ({
-          Identifiant: record.name,
-          ...translateLearnerKeys(data),
+        applicants[j].ratios.map(({ ratio, i }) => ({
+          Identifiant: learners.values[i].record.name,
+          ...translateApplicantKeys(learners.values[i].data),
           Correspondance:
             (ratio * 100).toFixed(0) + "%" + getRatioExtension(ratio),
         }))
       );
-
-      // tant qu'aucun champ selectionné, boucler (cela permet de redemander si l'utilisateur souhaite lier le champ au cas ou il quitte la selection sans choisir de champ)
       let response = await input.buttonsAsync(
-        "Souhaitez-vous associer la 🙋‍♂️ candidature avec l'un de ces 👩🏽‍🎓 apprenants",
+        "Souhaitez-vous associer la 🙋‍♂️ candidature ",
         [
           { label: "Passer", value: "Passer", variant: "secondary" },
-          ...learnersFiltred.map(({ record }) => ({
-            label: record.name,
-            value: record,
+          ...applicants[j].ratios.map(({ i }) => ({
+            label: learners.values[i].record.name,
+            value: learners.values[i].record,
           })),
         ]
       );
-      if (response !== "Passer") {
-        await bind(applicantsRecord, [response]);
-        output.text(
-          "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
-        );
-      } else {
-        output.text("☑ On passe au suivant");
-        break; // sortie du while
-      }
+      console.log(response);
+    } else {
+      output.markdown("☑ Aucune similarité pour ce champs");
     }
   }
   output.markdown("✅ Toutes les candidatures ont été vérifiées.");

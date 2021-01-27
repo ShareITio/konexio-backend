@@ -88,7 +88,7 @@ const { loadView } = require("../utils/model");
     ],
   });
 
-  output.markdown("### Association candidatures apprenants");
+  output.markdown("### Association des candidatures multiples");
 
   // initialisation
   // Definition du modele commun de données
@@ -130,53 +130,27 @@ const { loadView } = require("../utils/model");
     await Promise.all(applicantsInfos.map(loadView))
   )
     // filtrage des record si deja liés à uyne candidature multiple
-    .map((view) => {
-      const indexFiltered = [];
-      const dataFiltered = view.data.filter(({ multiple }, i) => {
-        if (multiple && multiple.length > 0) {
-          return false;
-        }
-        indexFiltered.push(i);
-        return true;
-      });
-      const recordsFiltered = view.records.filter((_, i) =>
-        indexFiltered.includes(i)
-      );
-      return {
-        ...view,
-        data: dataFiltered,
-        records: recordsFiltered,
-      };
-    });
-
-  output.markdown(
-    `ℹ️ Nous avons trouvé ${applicantsLoadedFiltered.reduce(
-      (acc, { records }) => acc + records.length,
-      0
-    )} nouvelles candidatures à vérifier, soi:`
-  );
-  applicantsLoadedFiltered.forEach((load, i) => {
-    output.markdown(
-      `- ${load.records.length} pour "${applicantsInfos[i].view.name}" de "${applicantsInfos[i].table.name}".`
-    );
-  });
-
-  output.markdown(
-    `ℹ️ Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante.`
-  );
+    .map(({ values, table }) => ({
+      table,
+      values: values.filter(
+        ({ data: { multiple } }) => !(multiple && multiple.length > 0)
+      ),
+    }));
+  console.log(applicantsLoadedFiltered);
 
   const applicants = applicantsLoadedFiltered
     // put every data into one array
-    .reduce((acc, { data, records, table }) => {
-      return [
+    .reduce(
+      (acc, { values, table }) => [
         ...acc,
-        ...data.map((applicantData, i) => ({
-          data: applicantData,
-          record: records[i],
+        ...values.map(({ record, data }) => ({
+          data: data,
+          record: record,
           table: table,
         })),
-      ];
-    }, [])
+      ],
+      []
+    )
     // complete data with ratios
     .map(({ data, record, table }, j, result) => {
       const ratios = result
@@ -192,6 +166,22 @@ const { loadView } = require("../utils/model");
       return { data, record, table, ratios };
     });
   console.log(applicants);
+
+  output.markdown(
+    `ℹ️ Nous avons trouvé ${applicantsLoadedFiltered.reduce(
+      (acc, { values }) => acc + values.length,
+      0
+    )} nouvelles candidatures à vérifier, soi:`
+  );
+  applicantsLoadedFiltered.forEach(({ values }, i) =>
+    output.markdown(
+      `- ${values.length} pour "${applicantsInfos[i].view.name}" de "${applicantsInfos[i].table.name}".`
+    )
+  );
+
+  output.markdown(
+    `ℹ️ Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante.`
+  );
 
   for (const j in applicants) {
     output.markdown(`---`);
