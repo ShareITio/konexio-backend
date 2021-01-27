@@ -209,7 +209,14 @@ const { loadView } = require("../utils/model");
           })),
         ]
       );
-      console.log(response);
+      if (response !== "Passer") {
+        await bind(applicants[j].record, [response]);
+        output.text(
+          "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
+        );
+      } else {
+        output.text("☑ On passe au suivant");
+      }
     } else {
       output.markdown("☑ Aucune similarité pour ce champs");
     }
