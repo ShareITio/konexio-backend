@@ -14,12 +14,17 @@ export const transformRecordToData = (model) => (record) =>
     {}
   );
 
-export const loadView = async ({ view, model, table, ...others }) => {
+export const loadView = async (
+  { view, model, table, ...others },
+  log = true
+) => {
   const transformRecordToDataWithModel = transformRecordToData(model);
   const { records } = await view.selectRecordsAsync();
-  output.markdown(
-    `✅ Vue "${view.name}"${table && ' de "' + table.name + '"'} chargée.`
-  );
+  if (log) {
+    output.markdown(
+      `✅ Vue "${view.name}"${table && ' de "' + table.name + '"'} chargée.`
+    );
+  }
   return {
     values: records.map((record) => ({
       record,

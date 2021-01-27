@@ -85,6 +85,27 @@ const { loadView } = require("../utils/model");
         label: "🏷️ Champ candidature multiple des candidatures DigiTous",
         parentTable: "candidaturesASTableDigiTous",
       }),
+      // Candidatures Multiple
+      input.config.table("applicantsMultipleTable", {
+        label: "📦 Table des candidatures multiple",
+      }),
+      input.config.view("applicantsMultipleView", {
+        label: "👓 Vue des candidatures multiple",
+        parentTable: "applicantsMultipleTable",
+      }),
+      input.config.field("applicantsMultipleDigitAllStart", {
+        label:
+          "🏷️ Champ candidatures DigitAll DigiStart des candidatures multiple",
+        parentTable: "applicantsMultipleTable",
+      }),
+      input.config.field("applicantsMultipleDigiTous", {
+        label: "🏷️ Champ candidatures DigiTous des candidatures multiple",
+        parentTable: "applicantsMultipleTable",
+      }),
+      input.config.field("applicantsMultipleLearner", {
+        label: "🏷️ Champ apprenants des candidatures multiple",
+        parentTable: "applicantsMultipleTable",
+      }),
     ],
   });
 
@@ -106,34 +127,94 @@ const { loadView } = require("../utils/model");
     phone: config.candidaturesASPhoneDigiTous,
     multiple: config.candidaturesASMultipleDigiTous,
   };
+  const ModelMultiple = {
+    digiTous: config.applicantsMultipleDigiTous,
+    digitAllStart: config.applicantsMultipleDigitAllStart,
+    learner: config.applicantsMultipleLearner,
+  };
+  const multipleInfo = {
+    table: config.applicantsMultipleTable,
+    view: config.applicantsMultipleView,
+    model: ModelMultiple,
+  };
 
+  const bindApplicantIntoMultiple = async (applicant1, applicant2) => {
+    const getFields = () => {
+      const digitAllStart = [];
+      const digiTous = [];
+      if (applicant1.table === config.candidaturesASTable) {
+        digitAllStart.push(applicant1.record);
+      }
+      if (applicant1.table === config.candidaturesASTableDigiTous) {
+        digiTous.push(applicant1.record);
+      }
+      if (applicant2.table === config.candidaturesASTable) {
+        digitAllStart.push(applicant2.record);
+      }
+      if (applicant2.table === config.candidaturesASTableDigiTous) {
+        digiTous.push(applicant2.record);
+      }
+      return { digitAllStart, digiTous };
+    };
+    const fields = getFields();
+    const multipleLoaded = await loadView(multipleInfo, false);
+    const multiple = await multipleLoaded.values.reduce(
+      (acc, { data, record }) =>
+        (data.digitAllStart &&
+          (data.digitAllStart.some((tu) => tu.id === applicant2.record.id) ||
+            data.digitAllStart.some((tu) => tu.id === applicant1.record.id))) ||
+        (data.digiTous &&
+          (data.digiTous.some((tu) => tu.id === applicant2.record.id) ||
+            data.digiTous.some((tu) => tu.id === applicant1.record.id)))
+          ? record
+          : acc,
+      undefined
+    );
+
+    if (multiple) {
+      function filterUnion(o) {
+        return this[o.id] ? false : (this[o.id] = true);
+      }
+      await config.applicantsMultipleTable.updateRecordAsync(multiple.record, {
+        [config.applicantsMultipleDigitAllStart
+          .id]: fields.digitAllStart
+          .concat(data.digitAllStart || [])
+          .filter(filterUnion, {}),
+        [config.applicantsMultipleDigiTous.id]: fields.digiTous
+          .concat(data.digiTous || [])
+          .filter(filterUnion, {}),
+      });
+      output.text(
+        `☑ Un record de la table ${multipleLoaded.table.name} a été mis à jour`
+      );
+    } else {
+      await config.applicantsMultipleTable.createRecordAsync({
+        [config.applicantsMultipleDigitAllStart.id]: fields.digitAllStart,
+        [config.applicantsMultipleDigiTous.id]: fields.digiTous,
+      });
+      output.text(
+        `☑ Un nouveau record de la table ${multipleLoaded.table.name} a été créé`
+      );
+    }
+  };
   const applicantsInfos = [
     {
       table: config.candidaturesASTable,
       view: config.nouvelleAllView,
       model: ModelDigitAllStart,
-      bind: makeUpdateRecord(
-        config.candidaturesASTable,
-        ModelDigitAllStart.multiple
-      ),
+      bind: bindApplicantIntoMultiple,
     },
     {
       table: config.candidaturesASTable,
       view: config.nouvelleStartView,
       model: ModelDigitAllStart,
-      bind: makeUpdateRecord(
-        config.candidaturesASTable,
-        ModelDigitAllStart.multiple
-      ),
+      bind: bindApplicantIntoMultiple,
     },
     {
       table: config.candidaturesASTableDigiTous,
       view: config.nouvelleTousView,
       model: ModelDigitTous,
-      bind: makeUpdateRecord(
-        config.candidaturesASTable,
-        ModelDigitAllStart.multiple
-      ),
+      bind: bindApplicantIntoMultiple,
     },
   ];
 
@@ -145,9 +226,7 @@ const { loadView } = require("../utils/model");
     .map(({ values, table, bind }) => ({
       bind,
       table,
-      values: values.filter(
-        ({ data: { multiple } }) => !(multiple && multiple.length > 0)
-      ),
+      values,
     }));
 
   const applicants = applicantsLoadedFiltered
@@ -156,9 +235,9 @@ const { loadView } = require("../utils/model");
       (acc, { values, table, bind }) => [
         ...acc,
         ...values.map(({ record, data }) => ({
-          data: data,
-          record: record,
-          table: table,
+          data,
+          record,
+          table,
           bind,
         })),
       ],
@@ -198,11 +277,17 @@ const { loadView } = require("../utils/model");
   for (const j in applicants) {
     output.markdown(`---`);
     output.markdown(
-      `Voici le candidat ${Number(j) + 1}/${applicants.length} à comparer: `
+      `Voici le candidat ${Number(j) + 1}/${applicants.length} de la table "${
+        applicants[j].table.name
+      }" à comparer: `
     );
     output.table(translateApplicantKeys(applicants[j].data));
     if (binded[j]) {
       output.text(`☑ Ce candidat a été joint avec ${binded[j].name}`);
+      continue;
+    }
+    if (applicants[j].data.multiple && applicants[j].data.multiple.length > 0) {
+      output.text("☑ Le candidat à déjà été lié");
       continue;
     }
     if (applicants[j].ratios.length > 0) {
@@ -221,13 +306,14 @@ const { loadView } = require("../utils/model");
           { label: "Passer", value: "Passer", variant: "secondary" },
           ...applicants[j].ratios.map(({ i }) => ({
             label: applicants[i].record.name,
-            value: applicants[i].record,
+            value: { i, value: applicants[i] },
           })),
         ]
       );
       if (response !== "Passer") {
-        await applicants[j].bind(applicants[j].record, [response]);
+        await applicants[j].bind(applicants[j], response.value);
         binded.j = applicants[j];
+        binded[response.i] = response.value;
         output.text(
           "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
         );
