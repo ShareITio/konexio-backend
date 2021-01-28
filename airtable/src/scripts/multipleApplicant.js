@@ -2,9 +2,10 @@
 const { distanceRatio } = require("../utils/association/ratioProcessing");
 const {
   ACCEPTATION_RATIO,
-  getRatioExtension,
-  translateApplicantKeys,
   prepareBindApplicants,
+  logVerificationStats,
+  logApplicantToCompare,
+  logCompareResult,
 } = require("../utils/association/tools");
 const { loadView } = require("../utils/model");
 
@@ -52,11 +53,11 @@ const { loadView } = require("../utils/model");
       input.config.field("candidaturesASDate", {
         label:
           "🏷️ Champ date de candidature des candidatures DigitAll & DigiStart",
-        parentTable: "candidaturesASTableDigiTous",
+        parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASStatus", {
         label: "🏷️ Champ status des candidatures DigitAll & DigiStart",
-        parentTable: "candidaturesASStatus",
+        parentTable: "candidaturesASTable",
       }),
       // Candidatures DigiTous
       input.config.table("candidaturesASTableDigiTous", {
@@ -145,6 +146,7 @@ const { loadView } = require("../utils/model");
     digitAllStart: config.applicantsMultipleDigitAllStart,
     learner: config.applicantsMultipleLearner,
   };
+
   const multipleInfo = {
     table: config.applicantsMultipleTable,
     view: config.applicantsMultipleView,
@@ -172,17 +174,9 @@ const { loadView } = require("../utils/model");
   ];
 
   // recuperation nouvelle digitAll; digiStart, DigiTous
-  const applicantsLoadedFiltered = (
-    await Promise.all(applicantsInfos.map(loadView))
-  )
-    // filtrage des record si deja liés à uyne candidature multiple
-    .map(({ values, table, bind }) => ({
-      bind,
-      table,
-      values,
-    }));
+  const applicantsByView = await Promise.all(applicantsInfos.map(loadView));
 
-  const applicants = applicantsLoadedFiltered
+  const applicantsProcessed = applicantsByView
     // put every data into one array
     .reduce(
       (acc, { values, table, bind }) => [
@@ -211,70 +205,68 @@ const { loadView } = require("../utils/model");
       return { data, record, table, ratios, bind };
     });
 
-  output.markdown(
-    `ℹ️ Nous avons trouvé ${applicantsLoadedFiltered.reduce(
-      (acc, { values }) => acc + values.length,
-      0
-    )} nouvelles candidatures à vérifier, soi:`
+  logVerificationStats(applicantsByView);
+  const ModelDisplay = Object.keys(ModelDigitAllStart).reduce(
+    (acc, key) =>
+      key === "multiple" ? acc : { ...acc, [key]: ModelDigitAllStart[key] },
+    {}
   );
-  applicantsLoadedFiltered.forEach(({ values }, i) =>
-    output.markdown(
-      `- ${values.length} pour "${applicantsInfos[i].view.name}" de "${applicantsInfos[i].table.name}".`
-    )
-  );
-
-  output.markdown(
-    `ℹ️ Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante.`
-  );
+  // { ...ModelDigitAllStart, multiple: undefined };
   const binded = {};
-  for (const j in applicants) {
-    output.markdown(`---`);
-    output.markdown(
-      `Voici le candidat ${Number(j) + 1}/${applicants.length} de la table "${
-        applicants[j].table.name
-      }" à comparer: `
-    );
-    output.table(translateApplicantKeys(applicants[j].data));
+  for (const j in applicantsProcessed) {
+    logApplicantToCompare(applicantsProcessed, j, ModelDisplay);
     if (binded[j]) {
       output.text(`☑ Ce candidat a été joint avec ${binded[j].name}`);
       continue;
     }
-    if (applicants[j].data.multiple && applicants[j].data.multiple.length > 0) {
+    if (
+      applicantsProcessed[j].data.multiple &&
+      applicantsProcessed[j].data.multiple.length > 0
+    ) {
       output.text("☑ Le candidat à déjà été lié");
       continue;
     }
-    if (applicants[j].ratios.length > 0) {
-      output.text("👩🏽‍🎓 Apprenants correspondants trouvés");
-      output.table(
-        applicants[j].ratios.map(({ ratio, i }) => ({
-          Identifiant: applicants[i].record.name,
-          ...translateApplicantKeys(applicants[i].data),
-          Correspondance:
-            (ratio * 100).toFixed(0) + "%" + getRatioExtension(ratio),
-        }))
+    if (applicantsProcessed[j].ratios.length > 0) {
+      logCompareResult(
+        applicantsProcessed[j],
+        applicantsProcessed,
+        ModelDisplay
       );
       let response = await input.buttonsAsync(
         "Souhaitez-vous associer la 🙋‍♂️ candidature ",
         [
           { label: "Passer", value: "Passer", variant: "secondary" },
-          ...applicants[j].ratios.map(({ i }) => ({
-            label: applicants[i].record.name,
-            value: { i, value: applicants[i] },
+          ...applicantsProcessed[j].ratios.map(({ i }) => ({
+            label: applicantsProcessed[i].record.name,
+            value: { i, value: applicantsProcessed[i] },
           })),
         ]
       );
       if (response !== "Passer") {
-        await applicants[j].bind(applicants[j], response.value);
-        binded.j = applicants[j];
-        binded[response.i] = response.value;
-        output.text(
-          "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
+        let response2 = await input.buttonsAsync(
+          `Êtes-vous sûr de vouloir lier ${applicantsProcessed[j].record.name} à ${response.value.record.name} ?`,
+          [
+            { label: "Oui", value: "Oui", variant: "primary" },
+            { label: "Non", value: "Non", variant: "default" },
+          ]
         );
-      } else {
-        output.text("☑ On passe au suivant");
+        if (response2 === "Oui") {
+          await applicantsProcessed[j].bind(
+            applicantsProcessed[j],
+            response.value
+          );
+          binded.j = applicantsProcessed[j];
+          binded[response.i] = response.value;
+          output.text(
+            "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
+          );
+          continue;
+        }
       }
     } else {
-      output.markdown("☑ Aucune similarité pour ce champs");
+      output.markdown("✖️ Aucune correspondance pour cette candidature");
     }
+    output.text("☑ On passe au suivant");
   }
+  output.markdown("✅ Toutes les candidatures ont été vérifiées.");
 })();

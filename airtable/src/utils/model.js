@@ -6,13 +6,20 @@ export const makeUpdateRecord = (table, field) => (record, value) =>
 
 // permet de transformer un record en données selon son model
 export const transformRecordToData = (model) => (record) =>
-  Object.keys(model).reduce(
-    (acc, key) => ({
+  Object.keys(model).reduce((acc, key) => {
+    const value = record.getCellValue(model[key]);
+    return {
       ...acc,
-      [key]: record.getCellValue(model[key]),
-    }),
-    {}
-  );
+      [key]:
+        typeof value === "string"
+          ? key === "date"
+            ? new Date(value)
+            : value
+          : value
+          ? value.name
+          : value,
+    };
+  }, {});
 
 export const loadView = async (
   { view, model, table, ...others },
@@ -26,11 +33,12 @@ export const loadView = async (
     );
   }
   return {
+    ...others,
     values: records.map((record) => ({
       record,
       data: transformRecordToDataWithModel(record),
     })),
+    view,
     table,
-    ...others,
   };
 };

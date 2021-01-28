@@ -5,6 +5,7 @@
   "scripts": {
     "start": "webpack serve",
     "build": "webpack --mode production",
+    "watch": "webpack --mode production --watch",
     "test": "dotenv jest"
   },
   "author": "Johann Hospice",

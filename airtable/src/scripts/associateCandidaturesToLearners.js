@@ -16,6 +16,9 @@ const {
   translateLearnerKeys,
   getRatioExtension,
   ACCEPTATION_RATIO,
+  logVerificationStats,
+  logApplicantToCompare,
+  logCompareResult,
 } = require("../utils/association/tools");
 const { makeUpdateRecord, loadView } = require("../utils/model");
 // retirer le block de la fonction dabs la version build du script pour pouvoir lexecuter dans airtable
@@ -177,19 +180,19 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
   const learners = await loadView(learnerInfos);
 
   // recuperation nouvelle digitAll; digitStart, DigiTous
-  const applicantsLoadedFiltered = (
-    await Promise.all(applicantsInfos.map(loadView))
-  )
+  const applicantsByView = (await Promise.all(applicantsInfos.map(loadView)))
     // filtrage des record si deja liés
-    .map(({ values, table, bind }) => ({
+    .map(({ values, table, view, bind }) => ({
       bind,
       table,
+      view,
       values: values.filter(
         ({ data: { learners } }) => !(learners && learners.length > 0)
       ),
     }));
 
-  const applicants = applicantsLoadedFiltered
+  const applicants = applicantsByView
+    // mise à plat
     .reduce((acc, { values, table, bind }) => {
       return [
         ...acc,
@@ -213,59 +216,34 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
         );
       return { data, record, table, ratios, bind };
     });
-  output.markdown(
-    `ℹ️ Nous avons trouvé ${applicantsLoadedFiltered.reduce(
-      (acc, { values }) => acc + values.length,
-      0
-    )} nouvelles candidatures à vérifier, soi:`
-  );
-  applicantsLoadedFiltered.forEach(({ values }, i) =>
-    output.markdown(
-      `- ${values.length} pour "${applicantsInfos[i].view.name}" de "${applicantsInfos[i].table.name}".`
-    )
-  );
 
-  output.markdown(
-    `ℹ️ Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante.`
-  );
+  logVerificationStats(applicantsByView);
 
   for (const j in applicants) {
-    output.markdown(`---`);
-    output.markdown(
-      `Voici le candidat ${Number(j) + 1}/${applicants.length} à comparer: `
-    );
-    output.table(translateApplicantKeys(applicants[j].data));
+    logApplicantToCompare(applicants, j, ModelLearner);
     // todo: next si l'index du record à deja ete ajouté
     if (applicants[j].ratios.length > 0) {
-      output.text("👩🏽‍🎓 Apprenants correspondants trouvés");
-      output.table(
-        applicants[j].ratios.map(({ ratio, i }) => ({
-          Identifiant: learners.values[i].record.name,
-          ...translateApplicantKeys(learners.values[i].data),
-          Correspondance:
-            (ratio * 100).toFixed(0) + "%" + getRatioExtension(ratio),
-        }))
-      );
+      logCompareResult(applicants[j], learners.values, ModelLearner);
       let response = await input.buttonsAsync(
-        "Souhaitez-vous associer la 🙋‍♂️ candidature ",
+        "Souhaitez-vous associer la candidature ?",
         [
           { label: "Passer", value: "Passer", variant: "secondary" },
           ...applicants[j].ratios.map(({ i }) => ({
             label: learners.values[i].record.name,
-            value: learners.values[i].record,
+            value: learners.values[i],
           })),
         ]
       );
       if (response !== "Passer") {
-        await applicants[j].bind(applicants[j].record, [response]);
+        await applicants[j].bind(applicants[j].record, [response.record]);
         output.text(
-          "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
+          `✅ La "${applicants[j].table.name}" a été associée au record "${learners.table.name}" sélectionné`
         );
       } else {
         output.text("☑ On passe au suivant");
       }
     } else {
-      output.markdown("☑ Aucune similarité pour ce champs");
+      output.markdown("✖️ Aucune correspondance pour cette candidature");
     }
   }
   output.markdown("✅ Toutes les candidatures ont été vérifiées.");

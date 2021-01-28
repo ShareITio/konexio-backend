@@ -10,6 +10,11 @@ export const getRatioExtension = (ratio) =>
     ? " 🤔"
     : "";
 
+export const translateKeys = (data, model) =>
+  Object.keys(model).reduce(
+    (acc, key) => ({ ...acc, [model[key].name]: data[key] }),
+    {}
+  );
 export const translateLearnerKeys = ({
   lastName,
   firstName,
@@ -34,9 +39,49 @@ export const translateApplicantKeys = ({
   [config.candidaturesASFirstname.name]: firstName,
   [config.candidaturesASEmail.name]: email,
   [config.candidaturesASPhone.name]: phone,
-  [config.candidaturesASStatus.name]: status,
-  [config.candidaturesASDate.name]: date,
+  [config.candidaturesASStatus.name]: status && status.name,
+  [config.candidaturesASDate.name]: date && new Date(date),
 });
+
+export const logVerificationStats = (applicantsLoadedFiltered) => {
+  output.markdown(
+    `ℹ️ Nous avons trouvé ${applicantsLoadedFiltered.reduce(
+      (acc, { values }) => acc + values.length,
+      0
+    )} nouvelles candidatures à vérifier, soi:`
+  );
+  applicantsLoadedFiltered.forEach(({ values, view, table }, i) =>
+    output.markdown(
+      `- ${values.length} pour "${view.name}" de "${table.name}".`
+    )
+  );
+  output.markdown(
+    `ℹ️ Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante.`
+  );
+};
+export const logApplicantToCompare = (applicants, i, model) => {
+  output.markdown(`---`);
+  output.markdown(
+    `Voici le candidat ${Number(i) + 1}/${applicants.length} de la table "${
+      applicants[i].table.name
+    }" à comparer: `
+  );
+  output.table({
+    Identifiant: applicants[i].record.name,
+    ...translateKeys(applicants[i].data, model),
+  });
+};
+
+export const logCompareResult = (applicant, input, model) => {
+  output.text(`${applicant.table.name} correspondants trouvés`);
+  output.table(
+    applicant.ratios.map(({ ratio, i }) => ({
+      Identifiant: input[i].record.name,
+      ...translateKeys(input[i].data, model),
+      Correspondance: (ratio * 100).toFixed(0) + "%" + getRatioExtension(ratio),
+    }))
+  );
+};
 
 // Créé un record dans la table multiple cnadidature ou en trouve un matchant une des candidatures et la met à jour
 export const prepareBindApplicants = (multipleInfo) => async (
