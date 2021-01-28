@@ -196,7 +196,7 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
         ...values.map(({ data, record }) => ({
           data,
           record,
-          table: table,
+          table,
           bind,
         })),
       ];

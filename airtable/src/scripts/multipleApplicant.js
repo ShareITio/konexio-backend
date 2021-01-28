@@ -1,19 +1,10 @@
 // Créer des comptes apprenants Crossknowledge
-
-// Repeter pour digitall digistart digitous
-// 1. recuperation de la vue Nouvelle
-// 2. Comparaison avec la table Apprenant (algo lenvenstein)
-// 3. Montrer les record concordant avec un certain pourcentage
-// 4. Action: 1.passer ou 2.lier
-// 4.1.1 Suivant
-// 4.2.1 Action: choisir les records "input.recordAsync" sur concordant
-// 4.2.2 Lier candidature à apprenant
-
 const { distanceRatio } = require("../utils/association/ratioProcessing");
 const {
   ACCEPTATION_RATIO,
   getRatioExtension,
   translateApplicantKeys,
+  prepareBindApplicants,
 } = require("../utils/association/tools");
 const { loadView } = require("../utils/model");
 
@@ -27,35 +18,45 @@ const { loadView } = require("../utils/model");
     items: [
       // Candidatures DigitAll et DigiStart
       input.config.table("candidaturesASTable", {
-        label: "📦 Table des candidatures digitAll & digiStart",
+        label: "📦 Table des candidatures DigitAll & digiStart",
       }),
       input.config.view("nouvelleAllView", {
-        label: "👓 Vue des candidatures digitAll",
+        label: "👓 Vue des candidatures DigitAll",
         parentTable: "candidaturesASTable",
       }),
       input.config.view("nouvelleStartView", {
-        label: "👓 Vue des candidatures digitStart",
+        label: "👓 Vue des candidatures DigiStart",
         parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASEmail", {
-        label: "🏷️ Champ email des candidatures",
+        label: "🏷️ Champ email des candidatures DigitAll & DigiStart",
         parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASFirstname", {
-        label: "🏷️ Champ prénom des candidatures",
+        label: "🏷️ Champ prénom des candidatures DigitAll & DigiStart",
         parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASLastname", {
-        label: "🏷️ Champ nom des candidatures",
+        label: "🏷️ Champ nom des candidatures DigitAll & DigiStart",
         parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASPhone", {
-        label: "🏷️ Champ téléphone des candidatures",
+        label: "🏷️ Champ téléphone des candidatures DigitAll & DigiStart",
         parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASMultiple", {
-        label: "🏷️ Champ candidature multiple des candidatures DigiTous",
+        label:
+          "🏷️ Champ candidature multiple des candidatures DigitAll & DigiStart",
         parentTable: "candidaturesASTable",
+      }),
+      input.config.field("candidaturesASDate", {
+        label:
+          "🏷️ Champ date de candidature des candidatures DigitAll & DigiStart",
+        parentTable: "candidaturesASTableDigiTous",
+      }),
+      input.config.field("candidaturesASStatus", {
+        label: "🏷️ Champ status des candidatures DigitAll & DigiStart",
+        parentTable: "candidaturesASStatus",
       }),
       // Candidatures DigiTous
       input.config.table("candidaturesASTableDigiTous", {
@@ -85,6 +86,14 @@ const { loadView } = require("../utils/model");
         label: "🏷️ Champ candidature multiple des candidatures DigiTous",
         parentTable: "candidaturesASTableDigiTous",
       }),
+      input.config.field("candidaturesASDateDigiTous", {
+        label: "🏷️ Champ date de candidature des candidatures DigiTous",
+        parentTable: "candidaturesASTableDigiTous",
+      }),
+      input.config.field("candidaturesASStatusDigiTous", {
+        label: "🏷️ Champ status des candidatures DigiTous",
+        parentTable: "candidaturesASTableDigiTous",
+      }),
       // Candidatures Multiple
       input.config.table("applicantsMultipleTable", {
         label: "📦 Table des candidatures multiple",
@@ -95,7 +104,7 @@ const { loadView } = require("../utils/model");
       }),
       input.config.field("applicantsMultipleDigitAllStart", {
         label:
-          "🏷️ Champ candidatures DigitAll DigiStart des candidatures multiple",
+          "🏷️ Champ candidatures DigitAll & DigiStart des candidatures multiple",
         parentTable: "applicantsMultipleTable",
       }),
       input.config.field("applicantsMultipleDigiTous", {
@@ -119,13 +128,17 @@ const { loadView } = require("../utils/model");
     email: config.candidaturesASEmail,
     phone: config.candidaturesASPhone,
     multiple: config.candidaturesASMultiple,
+    date: config.candidaturesASDate,
+    status: config.candidaturesASStatus,
   };
-  const ModelDigitTous = {
+  const ModelDigiTous = {
     lastName: config.candidaturesASLastnameDigiTous,
     firstName: config.candidaturesASFirstnameDigiTous,
     email: config.candidaturesASEmailDigiTous,
     phone: config.candidaturesASPhoneDigiTous,
     multiple: config.candidaturesASMultipleDigiTous,
+    date: config.candidaturesASDateDigiTous,
+    status: config.candidaturesASStatusDigiTous,
   };
   const ModelMultiple = {
     digiTous: config.applicantsMultipleDigiTous,
@@ -137,88 +150,28 @@ const { loadView } = require("../utils/model");
     view: config.applicantsMultipleView,
     model: ModelMultiple,
   };
-
-  const bindApplicantIntoMultiple = async (applicant1, applicant2) => {
-    const getFields = () => {
-      const digitAllStart = [];
-      const digiTous = [];
-      if (applicant1.table === config.candidaturesASTable) {
-        digitAllStart.push(applicant1.record);
-      }
-      if (applicant1.table === config.candidaturesASTableDigiTous) {
-        digiTous.push(applicant1.record);
-      }
-      if (applicant2.table === config.candidaturesASTable) {
-        digitAllStart.push(applicant2.record);
-      }
-      if (applicant2.table === config.candidaturesASTableDigiTous) {
-        digiTous.push(applicant2.record);
-      }
-      return { digitAllStart, digiTous };
-    };
-    const fields = getFields();
-    const multipleLoaded = await loadView(multipleInfo, false);
-    const multiple = await multipleLoaded.values.reduce(
-      (acc, { data, record }) =>
-        (data.digitAllStart &&
-          (data.digitAllStart.some((tu) => tu.id === applicant2.record.id) ||
-            data.digitAllStart.some((tu) => tu.id === applicant1.record.id))) ||
-        (data.digiTous &&
-          (data.digiTous.some((tu) => tu.id === applicant2.record.id) ||
-            data.digiTous.some((tu) => tu.id === applicant1.record.id)))
-          ? record
-          : acc,
-      undefined
-    );
-
-    if (multiple) {
-      function filterUnion(o) {
-        return this[o.id] ? false : (this[o.id] = true);
-      }
-      await config.applicantsMultipleTable.updateRecordAsync(multiple.record, {
-        [config.applicantsMultipleDigitAllStart
-          .id]: fields.digitAllStart
-          .concat(data.digitAllStart || [])
-          .filter(filterUnion, {}),
-        [config.applicantsMultipleDigiTous.id]: fields.digiTous
-          .concat(data.digiTous || [])
-          .filter(filterUnion, {}),
-      });
-      output.text(
-        `☑ Un record de la table ${multipleLoaded.table.name} a été mis à jour`
-      );
-    } else {
-      await config.applicantsMultipleTable.createRecordAsync({
-        [config.applicantsMultipleDigitAllStart.id]: fields.digitAllStart,
-        [config.applicantsMultipleDigiTous.id]: fields.digiTous,
-      });
-      output.text(
-        `☑ Un nouveau record de la table ${multipleLoaded.table.name} a été créé`
-      );
-    }
-  };
   const applicantsInfos = [
     {
       table: config.candidaturesASTable,
       view: config.nouvelleAllView,
       model: ModelDigitAllStart,
-      bind: bindApplicantIntoMultiple,
+      bind: prepareBindApplicants(multipleInfo),
     },
     {
       table: config.candidaturesASTable,
       view: config.nouvelleStartView,
       model: ModelDigitAllStart,
-      bind: bindApplicantIntoMultiple,
+      bind: prepareBindApplicants(multipleInfo),
     },
     {
       table: config.candidaturesASTableDigiTous,
       view: config.nouvelleTousView,
-      model: ModelDigitTous,
-      bind: bindApplicantIntoMultiple,
+      model: ModelDigiTous,
+      bind: prepareBindApplicants(multipleInfo),
     },
   ];
 
-  // recuperation nouvelle digitAll; digitStart, DigiTous
+  // recuperation nouvelle digitAll; digiStart, DigiTous
   const applicantsLoadedFiltered = (
     await Promise.all(applicantsInfos.map(loadView))
   )
