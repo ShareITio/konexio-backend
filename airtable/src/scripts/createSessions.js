@@ -107,6 +107,7 @@ async () => {
           data: learnerRecord,
         };
       };
+
       const data = {
         program: sessionRecord.getCellValue(config.sessionProgram),
         title: sessionRecord.getCellValue(config.sessionTitle),

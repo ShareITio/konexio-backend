@@ -1,95 +1,117 @@
-const Levenshtein = require("levenshtein");
+// Créer des comptes apprenants Crossknowledge
 
-async () => {
-  // Créer des comptes apprenants Crossknowledge
+// Repeter pour digitall digistart digitous
+// 1. recuperation de la vue Nouvelle
+// 2. Comparaison avec la table Apprenant (algo lenvenstein)
+// 3. Montrer les record concordant avec un certain pourcentage
+// 4. Action: 1.passer ou 2.lier
+// 4.1.1 Suivant
+// 4.2.1 Action: choisir les records "input.recordAsync" sur concordant
+// 4.2.2 Lier candidature à apprenant
 
-  // Repeter pour digitall digistart digitous
-  // 1. recuperation de la vue Nouvelle
-  // 2. Comparaison avec la table Apprenant (algo lenvenstein)
-  // 3. Montrer les record concordant avec un certain pourcentage
-  // 4. Action: 1.passer ou 2.lier
-  // 4.1.1 Suivant
-  // 4.2.1 Action: choisir les records "input.recordAsync" sur concordant
-  // 4.2.2 Lier candidature à apprenant
-
+// const { scenarioSearchDuplicates } = require("../utils/association/scenario");
+const { distanceRatio } = require("../utils/association/ratioProcessing");
+const {
+  translateApplicantKeys,
+  translateLearnerKeys,
+  getRatioExtension,
+  ACCEPTATION_RATIO,
+  logVerificationStats,
+  logApplicantToCompare,
+  logCompareResult,
+} = require("../utils/association/tools");
+const { makeUpdateRecord, loadView } = require("../utils/model");
+// retirer le block de la fonction dabs la version build du script pour pouvoir lexecuter dans airtable
+(async () => {
   const config = input.config({
-    title: "Configuration du lien candidatures/apprenants",
+    title:
+      "Configuration de l'association des candidatures DigitAll, DigitStart et DigitTous à leurs apprenants",
     description:
-      "TODO: Ce script permet de créer de nouveaux apprenants dans CrossKnowledge. Les paramètres ci-dessous servent à trouver les informations requises à la bonne exécution du script (Il n'est pas nécessaire d'y toucher).",
+      "Ce script permet de lier une candidature DigitAll, DigitStart ou DigitTous à sa correspondance dans la table Apprenants. Les paramètres ci-dessous servent à trouver les informations requises à la bonne exécution du script (Il n'est pas nécessaire d'y toucher).",
     items: [
+      // Apprenants
       input.config.table("apprenantsTable", {
-        label: "Table des apprenants",
+        label: "📦 Table des apprenants",
       }),
       input.config.view("apprenantsView", {
-        label: "Vue des apprenants",
+        label: "👓 Vue des apprenants",
         parentTable: "apprenantsTable",
       }),
-
       input.config.field("apprenantsEmail", {
-        label: "Champs email des apprenants",
+        label: "🏷️ Champ email des apprenants",
         parentTable: "apprenantsTable",
       }),
       input.config.field("apprenantsFirstname", {
-        label: "Champs prénom des apprenants",
+        label: "🏷️ Champ prénom des apprenants",
         parentTable: "apprenantsTable",
       }),
       input.config.field("apprenantsLastname", {
-        label: "Champs nom des apprenants",
+        label: "🏷️ Champ nom des apprenants",
         parentTable: "apprenantsTable",
       }),
       input.config.field("apprenantsPhone", {
-        label: "Champs téléphone des apprenants",
+        label: "🏷️ Champ téléphone des apprenants",
         parentTable: "apprenantsTable",
       }),
+      // Candidatures DigitAll et DigiStart
       input.config.table("candidaturesASTable", {
-        label: "Table des candidatures digitAll & digitStart",
-      }),
-      input.config.table("candidaturesASTableDigitTous", {
-        label: "Table des candidatures digitTous",
+        label: "📦 Table des candidatures digitAll & digiStart",
       }),
       input.config.view("nouvelleAllView", {
-        label: "Vue des candidatures digitAll",
+        label: "👓 Vue des candidatures digitAll",
         parentTable: "candidaturesASTable",
       }),
       input.config.view("nouvelleStartView", {
-        label: "Vue des candidatures digitStart",
+        label: "👓 Vue des candidatures digitStart",
         parentTable: "candidaturesASTable",
       }),
-      input.config.view("nouvelleTousView", {
-        label: "Vue des candidatures digitTous",
-        parentTable: "candidaturesASTableDigitTous",
-      }),
       input.config.field("candidaturesASEmail", {
-        label: "Champs email des candidatures",
+        label: "🏷️ Champ email des candidatures",
         parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASFirstname", {
-        label: "Champs prénom des candidatures",
+        label: "🏷️ Champ prénom des candidatures",
         parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASLastname", {
-        label: "Champs nom des candidatures",
+        label: "🏷️ Champ nom des candidatures",
         parentTable: "candidaturesASTable",
       }),
       input.config.field("candidaturesASPhone", {
-        label: "Champs téléphone des candidatures",
+        label: "🏷️ Champ téléphone des candidatures",
         parentTable: "candidaturesASTable",
       }),
+      input.config.field("candidaturesASLearners", {
+        label: "🏷️ Champ fiche apprenants des candidatures",
+        parentTable: "candidaturesASTable",
+      }),
+      // Candidatures DigiTous
+      input.config.table("candidaturesASTableDigiTous", {
+        label: "📦 Table des candidatures DigiTous",
+      }),
+      input.config.view("nouvelleTousView", {
+        label: "👓 Vue des candidatures DigiTous",
+        parentTable: "candidaturesASTableDigiTous",
+      }),
+      input.config.field("candidaturesASLearnersDigiTous", {
+        label: "🏷️ Champ fiche apprenants des candidatures",
+        parentTable: "candidaturesASTableDigiTous",
+      }),
       input.config.field("candidaturesASEmailDigiTous", {
-        label: "Champs email des candidatures DigiTous",
-        parentTable: "candidaturesASTableDigitTous",
+        label: "🏷️ Champ email des candidatures DigiTous",
+        parentTable: "candidaturesASTableDigiTous",
       }),
       input.config.field("candidaturesASFirstnameDigiTous", {
-        label: "Champs prénom des candidatures DigiTous",
-        parentTable: "candidaturesASTableDigitTous",
+        label: "🏷️ Champ prénom des candidatures DigiTous",
+        parentTable: "candidaturesASTableDigiTous",
       }),
       input.config.field("candidaturesASLastnameDigiTous", {
-        label: "Champs nom des candidatures DigiTous",
-        parentTable: "candidaturesASTableDigitTous",
+        label: "🏷️ Champ nom des candidatures DigiTous",
+        parentTable: "candidaturesASTableDigiTous",
       }),
       input.config.field("candidaturesASPhoneDigiTous", {
-        label: "Champs téléphone des candidatures DigiTous",
-        parentTable: "candidaturesASTableDigitTous",
+        label: "🏷️ Champ téléphone des candidatures DigiTous",
+        parentTable: "candidaturesASTableDigiTous",
       }),
     ],
   });
@@ -97,115 +119,151 @@ async () => {
   output.markdown("### Association candidatures apprenants");
 
   // initialisation
+  // Definition du modele commun de données
+  const ModelDigitAllStart = {
+    lastName: config.candidaturesASLastname,
+    firstName: config.candidaturesASFirstname,
+    email: config.candidaturesASEmail,
+    phone: config.candidaturesASPhone,
+    learners: config.candidaturesASLearners,
+  };
+  const ModelDigitTous = {
+    lastName: config.candidaturesASLastnameDigiTous,
+    firstName: config.candidaturesASFirstnameDigiTous,
+    email: config.candidaturesASEmailDigiTous,
+    phone: config.candidaturesASPhoneDigiTous,
+    learners: config.candidaturesASLearnersDigiTous,
+  };
+  const ModelLearner = {
+    lastName: config.apprenantsLastname,
+    firstName: config.apprenantsFirstname,
+    email: config.apprenantsEmail,
+    phone: config.apprenantsPhone,
+  };
 
-  // recuperation nouvelle digitall
-  const {
-    records: recordsAll,
-  } = await config.nouvelleAllView.selectRecordsAsync();
-  const dataNouvelleAll = recordsAll.map((record) => ({
-    lastName: record.getCellValue(config.candidaturesASLastname),
-    firstName: record.getCellValue(config.candidaturesASFirstname),
-    email: record.getCellValue(config.candidaturesASEmail),
-    phone: record.getCellValue(config.candidaturesASPhone),
-  }));
-  output.markdown("✅ Vue des nouvelles candidatures DigitAll chargée.");
+  const learnerInfos = {
+    table: config.apprenantsTable,
+    view: config.apprenantsView,
+    model: ModelLearner,
+  };
+  const applicantsInfos = [
+    {
+      table: config.candidaturesASTable,
+      view: config.nouvelleAllView,
+      model: ModelDigitAllStart,
+      bind: makeUpdateRecord(
+        config.candidaturesASTable,
+        ModelDigitAllStart.learners
+      ),
+    },
+    {
+      table: config.candidaturesASTable,
+      view: config.nouvelleStartView,
+      model: ModelDigitAllStart,
+      bind: makeUpdateRecord(
+        config.candidaturesASTable,
+        ModelDigitAllStart.learners
+      ),
+    },
+    {
+      table: config.candidaturesASTableDigiTous,
+      view: config.nouvelleTousView,
+      model: ModelDigitTous,
+      bind: makeUpdateRecord(
+        config.candidaturesASTableDigiTous,
+        ModelDigitTous.learners
+      ),
+    },
+  ];
 
-  // recuperation apprenants
-  const {
-    records: recordsApprenants,
-  } = await config.apprenantsView.selectRecordsAsync();
-  const dataApprenants = recordsApprenants.map((record) => ({
-    id: record.id,
-    lastName: record.getCellValue(config.apprenantsLastname),
-    firstName: record.getCellValue(config.apprenantsFirstname),
-    email: record.getCellValue(config.apprenantsEmail),
-    phone: record.getCellValue(config.apprenantsPhone),
-  }));
-  output.markdown("✅ Vue des nouvelles apprenants chargée.");
+  // recuperation des apprenants
+  const learners = await loadView(learnerInfos);
 
-  const views = [{ records: recordsAll, data: dataNouvelleAll }];
-  for (const j in views) {
-    const view = views[j];
+  // recuperation nouvelle digitAll; digitStart, DigiTous
+  const applicantsByView = (await Promise.all(applicantsInfos.map(loadView)))
+    // filtrage des record si deja liés
+    .map(({ values, table, view, bind }) => ({
+      bind,
+      table,
+      view,
+      values: values.filter(
+        ({ data: { learners } }) => !(learners && learners.length > 0)
+      ),
+    }));
 
-    for (const i in view.data) {
-      const candidat = view.data[i];
-      output.markdown("---");
-
-      output.text("Voici le candidat à comparer: ");
-      output.table(candidat);
-
-      // compare apprenant/candidature
-      const apprenantResult = dataApprenants.map((apprenant) => {
-        // todo: compare each fields and return distance percent
-        // passé si la candidature a deja été liée à cet apprenant
-        const distance = [
-          candidat.lastName && apprenant.lastName
-            ? new Levenshtein(candidat.lastName, apprenant.lastName)
-            : { distance: 0 },
-          candidat.firstName && apprenant.firstName
-            ? new Levenshtein(candidat.firstName, apprenant.firstName)
-            : { distance: 0 },
-          candidat.email && apprenant.email
-            ? new Levenshtein(candidat.email, apprenant.email)
-            : { distance: 0 },
-          candidat.phone && apprenant.phone
-            ? new Levenshtein(candidat.phone, apprenant.phone)
-            : { distance: 0 },
-        ].reduce((acc, { distance }) => acc + distance, 0);
-
-        const base = [
-          candidat.lastName && apprenant.lastName
-            ? candidat.lastName
-            : { length: 0 },
-          candidat.firstName && apprenant.firstName
-            ? candidat.firstName
-            : { length: 0 },
-          candidat.phone && apprenant.phone ? candidat.phone : { length: 0 },
-          candidat.email && apprenant.email ? candidat.email : { length: 0 },
-        ].reduce((acc, { length }) => acc + length, 0);
-
-        const rate = (base - distance) / base;
-        const extension =
-          rate > 0.8 ? " 🤩" : rate > 0.7 ? " 😎" : rate > 0.6 ? " 🤔" : "";
-        output.markdown(
-          `\`\`\`${apprenant.id}\`\`\` similaire à : ${
-            100 * rate
-          } %${extension}`
+  const applicants = applicantsByView
+    // mise à plat
+    .reduce((acc, { values, table, bind }) => {
+      return [
+        ...acc,
+        ...values.map(({ data, record }) => ({
+          data,
+          record,
+          table,
+          bind,
+        })),
+      ];
+    }, [])
+    // complete data with ratios
+    .map(({ data, record, table, bind }) => {
+      const ratios = learners.values
+        .map(({ data: learnerData }) => distanceRatio(data, learnerData))
+        // filtrage des apprenant respectant la condition et inclusion des données, du record...
+        .reduce(
+          (acc, ratio, i) =>
+            ratio >= ACCEPTATION_RATIO ? [...acc, { i, ratio }] : acc,
+          []
         );
+      return { data, record, table, ratios, bind };
+    });
 
-        // si correspondant à plus de 60%
-        return rate > 0.625;
-      });
+  logVerificationStats(applicantsByView);
 
-      const apprenantResultFilterd = apprenantResult
-        .map((value, i) => (value ? dataApprenants[i] : undefined))
-        .filter((value) => value);
-
-      if (!apprenantResultFilterd || apprenantResultFilterd.length < 1) {
-        output.text("Aucune similarité pour ce champs");
-      } else {
-        output.text("Voici les résultats : ");
-        output.table(apprenantResultFilterd);
-        let catOrDog = await input.buttonsAsync(
-          "Souhaitez vous lier ce champ ?",
-          ["Oui", "Non"]
+  for (const j in applicants) {
+    logApplicantToCompare(applicants, j, ModelLearner);
+    // todo: next si l'index du record à deja ete ajouté
+    if (applicants[j].ratios.length > 0) {
+      // output.text(`${learners.table.name} correspondants trouvés :`);
+      logCompareResult(applicants[j], learners.values, ModelLearner);
+      let response = await input.buttonsAsync(
+        "Quel·le apprenant·e souhaitez vous lier à la candidature ? ",
+        // `Souhaitez-vous associer la " ${applicants[j].table.name}" ?`,
+        [
+          { label: "Passer", value: "Passer", variant: "secondary" },
+          ...applicants[j].ratios.map(({ i }) => ({
+            label: learners.values[i].record.name,
+            value: learners.values[i],
+          })),
+        ]
+      );
+      if (response !== "Passer") {
+        let response2 = await input.buttonsAsync(
+          `Êtes-vous sûr de vouloir lier ${applicants[j].record.name} à ${response.record.name} ?`,
+          [
+            { label: "Oui", value: "Oui", variant: "primary" },
+            { label: "Non", value: "Non", variant: "default" },
+          ]
         );
-        if (catOrDog === "Oui") {
-          const apprenantSourceRecord = await input.recordAsync(
-            "Veuillez sélectionner un enregistrement :",
-            apprenantResult
-              .map((value, i) => (value ? recordsApprenants[i] : undefined))
-              .filter((value) => value)
+        if (response2 === "Oui") {
+          await applicants[j].bind(applicants[j].record, [response.record]);
+          output.markdown(
+            `✅ La "${applicants[j].table.name}" *${applicants[j].record.name}* a été associée à la "${learnerInfos.table.name}" *${response.record.name}*.`
           );
-
-          output.inspect(view.records[i]);
-          output.inspect(apprenantSourceRecord);
-          output.text("✅ La candidature a été associée à son apprenant.");
-          // todo si record selectionner l'associer champs "Fiche apprenants"
+          continue;
         } else {
           output.text("☑ On passe au suivant");
         }
+      } else {
+        output.text("☑ On passe au suivant");
       }
+    } else {
+      output.markdown("✖️ Aucune correspondance pour cette candidature");
     }
   }
-};
+  output.markdown("🏁 Toutes les candidatures ont été vérifiées.");
+
+  // todo:  ajout de statistique en print
+  // 0 sans correspondance
+  // 2 passées
+  // 3 liées
+})();
