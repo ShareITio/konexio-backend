@@ -48,7 +48,7 @@ export const logVerificationStats = (applicantsLoadedFiltered) => {
     `ℹ️ Nous avons trouvé ${applicantsLoadedFiltered.reduce(
       (acc, { values }) => acc + values.length,
       0
-    )} nouvelles candidatures à vérifier, soi:`
+    )} nouvelles candidatures à vérifier :`
   );
   applicantsLoadedFiltered.forEach(({ values, view, table }, i) =>
     output.markdown(
@@ -56,15 +56,16 @@ export const logVerificationStats = (applicantsLoadedFiltered) => {
     )
   );
   output.markdown(
-    `ℹ️ Pour rappel si aucune équivalence est trouvée, alors nous passerons à la candidature suivante.`
+    `ℹ️ Pour rappel si aucune équivalence n'est trouvée, alors nous passerons à la candidature suivante.`
   );
 };
 export const logApplicantToCompare = (applicants, i, model) => {
   output.markdown(`---`);
   output.markdown(
-    `Voici le candidat ${Number(i) + 1}/${applicants.length} de la table "${
-      applicants[i].table.name
-    }" à comparer: `
+    `###### Voici la candidature ${Number(i) + 1}/${applicants.length} : `
+    //  de la table "${
+    //   applicants[i].table.name
+    // }" à comparer: `
   );
   output.table({
     Identifiant: applicants[i].record.name,

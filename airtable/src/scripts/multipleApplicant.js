@@ -216,14 +216,14 @@ const { loadView } = require("../utils/model");
   for (const j in applicantsProcessed) {
     logApplicantToCompare(applicantsProcessed, j, ModelDisplay);
     if (binded[j]) {
-      output.text(`☑ Ce candidat a été joint précédemment.`);
+      output.text(`☑ Cette candidature a déjà été liée.`);
       continue;
     }
     if (
       applicantsProcessed[j].data.multiple &&
       applicantsProcessed[j].data.multiple.length > 0
     ) {
-      output.text("☑ Le candidat à déjà été lié");
+      output.text("☑ La candidature a déjà été liée");
       continue;
     }
     if (applicantsProcessed[j].ratios.length > 0) {
@@ -233,8 +233,7 @@ const { loadView } = require("../utils/model");
         ModelDisplay
       );
       let response = await input.buttonsAsync(
-        `Souhaitez-vous associer la "${applicantsProcessed[j].table.name}" ?`,
-        // "Souhaitez-vous associer la 🙋‍♂️ candidature ",
+        "Quel·le candidature souhaitez vous lier entre elles? ",
         [
           { label: "Passer", value: "Passer", variant: "secondary" },
           ...applicantsProcessed[j].ratios.map(({ i }) => ({
@@ -244,25 +243,27 @@ const { loadView } = require("../utils/model");
         ]
       );
       if (response !== "Passer") {
-        // let response2 = await input.buttonsAsync(
-        //   `Êtes-vous sûr de vouloir lier ${applicantsProcessed[j].record.name} à ${response.value.record.name} ?`,
-        //   [
-        //     { label: "Oui", value: "Oui", variant: "primary" },
-        //     { label: "Non", value: "Non", variant: "default" },
-        //   ]
-        // );
-        // if (response2 === "Oui") {
-        await applicantsProcessed[j].bind(
-          applicantsProcessed[j],
-          response.value
+        let response2 = await input.buttonsAsync(
+          `Êtes-vous sûr de vouloir lier ${applicantsProcessed[j].record.name} à ${response.value.record.name} ?`,
+          [
+            { label: "Oui", value: "Oui", variant: "primary" },
+            { label: "Non", value: "Non", variant: "default" },
+          ]
         );
-        binded.j = applicantsProcessed[j];
-        binded[response.i] = response.value;
-        output.markdown(
-          `✅ La "${applicantsProcessed[j].table.name}" *${applicantsProcessed[j].record.name}* a été associée à la "${response.value.table.name}" *${response.value.record.name}*.`
-        );
-        //   continue;
-        // }
+        if (response2 === "Oui") {
+          await applicantsProcessed[j].bind(
+            applicantsProcessed[j],
+            response.value
+          );
+          binded.j = applicantsProcessed[j];
+          binded[response.i] = response.value;
+          output.markdown(
+            `✅ La "${applicantsProcessed[j].table.name}" *${applicantsProcessed[j].record.name}* a été associée à la "${response.value.table.name}" *${response.value.record.name}*.`
+          );
+          continue;
+        } else {
+          output.text("☑ On passe au suivant");
+        }
       } else {
         output.text("☑ On passe au suivant");
       }
@@ -270,5 +271,5 @@ const { loadView } = require("../utils/model");
       output.markdown("✖️ Aucune correspondance pour cette candidature");
     }
   }
-  output.markdown("✅ Toutes les candidatures ont été vérifiées.");
+  output.markdown("🏁 Toutes les candidatures ont été vérifiées.");
 })();

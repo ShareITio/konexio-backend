@@ -226,7 +226,8 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
       // output.text(`${learners.table.name} correspondants trouvés :`);
       logCompareResult(applicants[j], learners.values, ModelLearner);
       let response = await input.buttonsAsync(
-        `Souhaitez-vous associer la " ${applicants[j].table.name}" ?`,
+        "Quel·le apprenant·e souhaitez vous lier à la candidature ? ",
+        // `Souhaitez-vous associer la " ${applicants[j].table.name}" ?`,
         [
           { label: "Passer", value: "Passer", variant: "secondary" },
           ...applicants[j].ratios.map(({ i }) => ({
@@ -236,13 +237,22 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
         ]
       );
       if (response !== "Passer") {
-        await applicants[j].bind(applicants[j].record, [response.record]);
-        // output.text(
-        //   `✅ La "${applicants[j].table.name}" a été associée au record "${learners.table.name}" sélectionné`
-        // );
-        output.markdown(
-          `✅ La "${applicants[j].table.name}" *${applicants[j].record.name}* a été associée à la "${learnerInfos.table.name}" *${response.record.name}*.`
+        let response2 = await input.buttonsAsync(
+          `Êtes-vous sûr de vouloir lier ${applicants[j].record.name} à ${response.record.name} ?`,
+          [
+            { label: "Oui", value: "Oui", variant: "primary" },
+            { label: "Non", value: "Non", variant: "default" },
+          ]
         );
+        if (response2 === "Oui") {
+          await applicants[j].bind(applicants[j].record, [response.record]);
+          output.markdown(
+            `✅ La "${applicants[j].table.name}" *${applicants[j].record.name}* a été associée à la "${learnerInfos.table.name}" *${response.record.name}*.`
+          );
+          continue;
+        } else {
+          output.text("☑ On passe au suivant");
+        }
       } else {
         output.text("☑ On passe au suivant");
       }
@@ -250,5 +260,10 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
       output.markdown("✖️ Aucune correspondance pour cette candidature");
     }
   }
-  output.markdown("✅ Toutes les candidatures ont été vérifiées.");
+  output.markdown("🏁 Toutes les candidatures ont été vérifiées.");
+
+  // todo:  ajout de statistique en print
+  // 0 sans correspondance
+  // 2 passées
+  // 3 liées
 })();
