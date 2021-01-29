@@ -73,7 +73,7 @@ export const logApplicantToCompare = (applicants, i, model) => {
 };
 
 export const logCompareResult = (applicant, input, model) => {
-  output.text(`${applicant.table.name} correspondants trouvés`);
+  output.text(`Correspondances trouvées :`);
   output.table(
     applicant.ratios.map(({ ratio, i }) => ({
       Identifiant: input[i].record.name,

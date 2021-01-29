@@ -223,9 +223,10 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
     logApplicantToCompare(applicants, j, ModelLearner);
     // todo: next si l'index du record à deja ete ajouté
     if (applicants[j].ratios.length > 0) {
+      // output.text(`${learners.table.name} correspondants trouvés :`);
       logCompareResult(applicants[j], learners.values, ModelLearner);
       let response = await input.buttonsAsync(
-        "Souhaitez-vous associer la candidature ?",
+        `Souhaitez-vous associer la " ${applicants[j].table.name}" ?`,
         [
           { label: "Passer", value: "Passer", variant: "secondary" },
           ...applicants[j].ratios.map(({ i }) => ({
@@ -236,8 +237,11 @@ const { makeUpdateRecord, loadView } = require("../utils/model");
       );
       if (response !== "Passer") {
         await applicants[j].bind(applicants[j].record, [response.record]);
-        output.text(
-          `✅ La "${applicants[j].table.name}" a été associée au record "${learners.table.name}" sélectionné`
+        // output.text(
+        //   `✅ La "${applicants[j].table.name}" a été associée au record "${learners.table.name}" sélectionné`
+        // );
+        output.markdown(
+          `✅ La "${applicants[j].table.name}" *${applicants[j].record.name}* a été associée à la "${learnerInfos.table.name}" *${response.record.name}*.`
         );
       } else {
         output.text("☑ On passe au suivant");

@@ -15,7 +15,7 @@ export const transformRecordToData = (model) => (record) =>
           ? key === "date"
             ? new Date(value)
             : value
-          : value
+          : value && value.name
           ? value.name
           : value,
     };

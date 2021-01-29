@@ -216,7 +216,7 @@ const { loadView } = require("../utils/model");
   for (const j in applicantsProcessed) {
     logApplicantToCompare(applicantsProcessed, j, ModelDisplay);
     if (binded[j]) {
-      output.text(`☑ Ce candidat a été joint avec ${binded[j].name}`);
+      output.text(`☑ Ce candidat a été joint précédemment.`);
       continue;
     }
     if (
@@ -233,7 +233,8 @@ const { loadView } = require("../utils/model");
         ModelDisplay
       );
       let response = await input.buttonsAsync(
-        "Souhaitez-vous associer la 🙋‍♂️ candidature ",
+        `Souhaitez-vous associer la "${applicantsProcessed[j].table.name}" ?`,
+        // "Souhaitez-vous associer la 🙋‍♂️ candidature ",
         [
           { label: "Passer", value: "Passer", variant: "secondary" },
           ...applicantsProcessed[j].ratios.map(({ i }) => ({
@@ -243,30 +244,31 @@ const { loadView } = require("../utils/model");
         ]
       );
       if (response !== "Passer") {
-        let response2 = await input.buttonsAsync(
-          `Êtes-vous sûr de vouloir lier ${applicantsProcessed[j].record.name} à ${response.value.record.name} ?`,
-          [
-            { label: "Oui", value: "Oui", variant: "primary" },
-            { label: "Non", value: "Non", variant: "default" },
-          ]
+        // let response2 = await input.buttonsAsync(
+        //   `Êtes-vous sûr de vouloir lier ${applicantsProcessed[j].record.name} à ${response.value.record.name} ?`,
+        //   [
+        //     { label: "Oui", value: "Oui", variant: "primary" },
+        //     { label: "Non", value: "Non", variant: "default" },
+        //   ]
+        // );
+        // if (response2 === "Oui") {
+        await applicantsProcessed[j].bind(
+          applicantsProcessed[j],
+          response.value
         );
-        if (response2 === "Oui") {
-          await applicantsProcessed[j].bind(
-            applicantsProcessed[j],
-            response.value
-          );
-          binded.j = applicantsProcessed[j];
-          binded[response.i] = response.value;
-          output.text(
-            "✅ La 🙋‍♂️ candidature a été associée à 👩🏽‍🎓 l'apprenant sélectionné "
-          );
-          continue;
-        }
+        binded.j = applicantsProcessed[j];
+        binded[response.i] = response.value;
+        output.markdown(
+          `✅ La "${applicantsProcessed[j].table.name}" *${applicantsProcessed[j].record.name}* a été associée à la "${response.value.table.name}" *${response.value.record.name}*.`
+        );
+        //   continue;
+        // }
+      } else {
+        output.text("☑ On passe au suivant");
       }
     } else {
       output.markdown("✖️ Aucune correspondance pour cette candidature");
     }
-    output.text("☑ On passe au suivant");
   }
   output.markdown("✅ Toutes les candidatures ont été vérifiées.");
 })();
