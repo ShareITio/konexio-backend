@@ -1,1 +1,1 @@
-[Voir le GitHub Wiki](https://github.com/ShareITio/konexio-backend/wiki)
+[Voir le GitHub Wiki](https://github.com/konexio/airtable/wiki)
