@@ -196,55 +196,6 @@ Resources:
           PURPOSE: !Ref Purpose
           MESSAGE_SCHEDULED_HOURS: 24
 
-  # On créé à chaque fois 2 fonction pour chacun des env pour ne pas mélanger les variable denv
-  coda:
-    Type: AWS::Serverless::Function
-    Condition: IsNotProduction
-    Properties:
-      FunctionName: !Sub "coda_${Purpose}"
-      Description: ""
-      Handler: handlers/coda.handler
-      CodeUri: src/
-      # AutoPublishAlias: live
-      # DeploymentPreference:
-      #   Type: !If [IsProduction, Linear10PercentEvery1Minute, AllAtOnce]
-      # Events:
-      #   ScheduledRule15:
-      #     Type: Schedule
-      #     Properties:
-      #       Schedule: "rate(24 hours)"
-      #       Description: Déclenché toutes les 15 minutes
-      #       Enabled: !If [IsProduction, true, false]
-      #   ApiEvent:
-      #     Type: Api
-      #     Properties:
-      #       Method: POST
-      #       Path: /crossknowledge/learners
-      #       RestApiId: !Ref ApiGateway
-      #       Auth:
-      #         ApiKeyRequired: true
-      Layers:
-        - !Ref KonexioBackendDepLayer
-      Policies:
-        - Statement:
-          - Effect: Allow
-            Action:
-            - sns:Publish
-            Resource: '*'
-      Environment:
-        Variables:
-          CROSSKNOWLEDGE_HOST: !Ref CrossknowledgeHost
-          CROSSKNOWLEDGE_API_KEY: !Ref CrossknowledgeApiKey
-          AIRTABLE_BASE: !Ref AirtableBase
-          AIRTABLE_API_KEY: !Ref AirtableApiKey
-          AIRTABLE_CANDIDATES_TABLE: !Ref AirtableCandidatesTable
-          AIRTABLE_MESSAGE_TABLE: !Ref AirtableMessagesTable
-          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
-          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
-          TWILIO_PHONE: !Ref TwilioPhone
-          ERROR_TOPIC_ARN: !Ref ErrorTopicArn
-          PURPOSE: !Ref Purpose
-
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
