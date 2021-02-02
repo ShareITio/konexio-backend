@@ -248,7 +248,7 @@ Resources:
   # This is a Lambda function config associated with the source code: create-crossknowledge-learners.js
   createCrossknowledgeLearners:
     Type: AWS::Serverless::Function
-    Condition: IsNotProduction
+    # Condition: IsNotProduction
     Properties:
       FunctionName: !Sub "createCrossknowledgeLearners_${Purpose}"
       Description: "Créé des comptes apprenants dans crossknowledge."
@@ -284,7 +284,7 @@ Resources:
   # This is a Lambda function config associated with the source code: create-crossknowledge-sessions.js
   createCrossknowledgeSessions:
     Type: AWS::Serverless::Function
-    Condition: IsNotProduction
+    # Condition: IsNotProduction
     Properties:
       FunctionName: !Sub "createCrossknowledgeSessions_${Purpose}"
       Description: "Créé des sessions dans crossknowledge et les lie à des apprenants."
@@ -417,20 +417,20 @@ Resources:
       RetentionPolicy: Delete
 
   # fonction fantoche permettant de laisser passer mon api gateway en prod sans route concrete
-  testprod:
-    Type: AWS::Serverless::Function
-    Condition: IsProduction
-    Properties:
-      FunctionName: !Sub "testprod_${Purpose}"
-      Description: "Accompagne l'apigateway pour la production."
-      Handler: handlers/create-crossknowledge-sessions.createCrossknowledgeSessions
-      CodeUri: src/
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            Method: POST
-            Path: /testprod
-            RestApiId: !Ref ApiGateway
-            Auth:
-              ApiKeyRequired: true
+  # testprod:
+  #   Type: AWS::Serverless::Function
+  #   Condition: IsProduction
+  #   Properties:
+  #     FunctionName: !Sub "testprod_${Purpose}"
+  #     Description: "Accompagne l'apigateway pour la production."
+  #     Handler: handlers/create-crossknowledge-sessions.createCrossknowledgeSessions
+  #     CodeUri: src/
+  #     Events:
+  #       ApiEvent:
+  #         Type: Api
+  #         Properties:
+  #           Method: POST
+  #           Path: /testprod
+  #           RestApiId: !Ref ApiGateway
+  #           Auth:
+  #             ApiKeyRequired: true
